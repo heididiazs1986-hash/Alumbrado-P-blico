@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#07579b" />
+<title>AP Inventory</title>
+<link rel="manifest" href="manifest.json" />
+<style>
+:root{
+  --blue:#0a5ea8;--blue-deep:#093b78;--blue2:#1684df;--blue-soft:#eaf4ff;--green:#12a861;--green-2:#0f8e52;--green-soft:#eaf8f0;
+  --amber:#efad24;--red:#d92d20;--bg:#edf3f9;--bg-2:#f7fbff;--card:#ffffff;--text:#15273d;--muted:#61758b;
+  --line:#d9e5f1;--line-strong:#c8d7e6;--shadow:0 16px 42px rgba(11,53,92,.10);--shadow-soft:0 8px 24px rgba(14,48,85,.08);
+  --r:24px;--r2:18px;--max:1180px;
+}
+*{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+html,body{margin:0;min-height:100%;background:linear-gradient(180deg,#f5f9fd 0%, #edf3f9 100%);color:var(--text)}
+body{padding-bottom:100px}.hidden{display:none!important}
+.appbar{position:sticky;top:0;z-index:30;background:linear-gradient(135deg,#0a4f92 0%,#0b6cc1 52%,#1684df 100%);color:#fff;padding:16px 16px;box-shadow:0 10px 28px rgba(5,57,103,.20)}
+.appbar .row{max-width:var(--max);margin:auto;display:flex;align-items:center;gap:14px}
+.brandmark{width:50px;height:50px;border-radius:16px;background:rgba(255,255,255,.14);display:grid;place-items:center;border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+.brandmark svg{width:34px;height:34px}
+.brand{min-width:0;flex:1}
+.brand b{font-size:1.95rem;line-height:1;display:block;font-weight:950;letter-spacing:-.03em}
+.brand span{font-size:.95rem;opacity:.96;display:block;margin-top:4px}
+.offline{font-size:.92rem;background:rgba(16,175,93,.16);border:1px solid rgba(255,255,255,.28);padding:10px 14px;border-radius:999px;white-space:nowrap;font-weight:900;backdrop-filter:blur(8px)}
+main{max-width:var(--max);margin:auto;padding:18px 16px}.screen{display:none}.screen.active{display:block}
+.card{background:linear-gradient(180deg,#ffffff 0%, #fdfefe 100%);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;margin:14px 0}.card.flat{box-shadow:none;background:transparent;border:0;padding:0}
+.section-title{font-size:1.05rem;font-weight:950;margin:2px 0 14px;display:flex;align-items:center;gap:10px;letter-spacing:-.01em}.section-title .dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,var(--blue2),var(--blue-deep))}
+.hero{background:linear-gradient(135deg,#ffffff 0%,#f4f9ff 60%,#e8f3ff 100%);border:1px solid #cfe0f2;position:relative;overflow:hidden}.hero::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(22,132,223,.16),rgba(22,132,223,0));pointer-events:none}
+.crew{display:flex;align-items:center;gap:14px;position:relative;z-index:1}.avatar{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(135deg,#e1f0ff,#f3f9ff);color:var(--blue);font-size:1.8rem;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+.crew-info{flex:1;min-width:0}.crew-info b{display:block;font-size:1.2rem;line-height:1.1;letter-spacing:-.02em}.crew-info span{font-size:.98rem;color:var(--muted);margin-top:4px;display:block;line-height:1.35}
+.tiny-btn{border:1px solid #cfe0f2;background:#fff;color:var(--blue);padding:11px 14px;border-radius:15px;font-weight:900;font-size:.98rem;box-shadow:var(--shadow-soft)}
+.kpi-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.kpi{background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);border:1px solid var(--line);border-radius:22px;padding:16px;min-height:112px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow-soft)}
+.kpi .ico{width:48px;height:48px;border-radius:16px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;font-size:1.45rem;font-weight:900;box-shadow:inset 0 1px 0 rgba(255,255,255,.75)}
+.kpi.green .ico{background:var(--green-soft);color:var(--green)}
+.kpi .n{font-size:2.15rem;line-height:1;font-weight:950;letter-spacing:-.04em}.kpi .l{font-size:.98rem;color:var(--muted);font-weight:850;margin-top:6px;line-height:1.2}
+.actions{display:grid;gap:12px;margin-top:14px}.action{width:100%;border-radius:20px;padding:16px 16px;display:flex;align-items:center;gap:14px;text-align:left;background:#fff;border:1px solid var(--line);color:var(--text);font-weight:950;min-height:78px;box-shadow:var(--shadow-soft)}
+.action .ico{font-size:1.5rem;width:32px;text-align:center}.action span{font-size:1.08rem;line-height:1.15}.action small{display:block;font-weight:700;color:var(--muted);margin-top:5px;font-size:.92rem;line-height:1.35}.action.primary{background:linear-gradient(135deg,#0d7edd 0%,#0a5ea8 100%);color:#fff;border:0}.action.success{background:linear-gradient(135deg,#14b468 0%,#0f9657 100%);color:#fff;border:0}.action.primary small,.action.success small{color:rgba(255,255,255,.88)}
+.toolbar{display:flex;align-items:center;gap:12px;margin-bottom:12px}.back{border:1px solid var(--line);background:#fff;border-radius:14px;padding:10px 13px;color:var(--text);font-weight:950;box-shadow:var(--shadow-soft)}.toolbar h2{font-size:1.45rem;letter-spacing:-.03em;margin:0;flex:1}
+.tabs{display:flex;gap:8px;overflow:auto;padding-bottom:4px}.tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 14px;font-size:.95rem;font-weight:900;white-space:nowrap;color:var(--muted)}.tab.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 8px 20px rgba(10,94,168,.18)}
+.searchbox{width:100%;border:1px solid var(--line);border-radius:16px;padding:14px 16px;font-size:1rem;background:#fff;outline:none;margin:12px 0 6px;box-shadow:var(--shadow-soft)}.searchbox:focus{border-color:#79b4e7;box-shadow:0 0 0 4px rgba(121,180,231,.18)}
+.order-card{background:linear-gradient(180deg,#fff 0%,#fbfdff 100%);border:1px solid var(--line);border-radius:22px;padding:16px;margin:12px 0;box-shadow:var(--shadow-soft)}.order-head{display:flex;gap:10px;align-items:flex-start}.order-num{font-size:1.35rem;letter-spacing:-.03em;font-weight:950;flex:1}.badge{font-size:.8rem;padding:7px 10px;border-radius:999px;font-weight:950}.badge.progress{background:#e6f1ff;color:#0665b4}.badge.done{background:#e8f8ef;color:#0a8848}.badge.pending{background:#eef1f4;color:#59687b}.order-meta{font-size:.96rem;color:var(--muted);margin-top:5px;line-height:1.35}.progressbar{height:9px;border-radius:99px;background:#edf1f5;overflow:hidden;margin:13px 0 10px}.progressbar i{height:100%;display:block;background:linear-gradient(90deg,#0a7bd8,#16a3ee);border-radius:99px}.order-stats{display:flex;justify-content:space-between;font-size:.92rem;font-weight:900;color:#42536a;gap:10px}
+.grid{display:grid;grid-template-columns:1fr;gap:12px}.grid.two,.grid.desktop2{grid-template-columns:1fr}
+.field label{display:block;font-size:.95rem;color:#506478;font-weight:850;margin:0 0 8px}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line-strong);border-radius:16px;background:#fbfdff;color:var(--text);padding:14px 14px;font-size:1rem;outline:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}.field input:focus,.field select:focus,.field textarea:focus{border-color:#66aee7;box-shadow:0 0 0 4px #dff0ff}.field textarea{min-height:104px;resize:vertical}.field .hint{font-size:.9rem;color:var(--muted);margin-top:6px;line-height:1.45}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.seg button{border:1px solid var(--line);background:#fff;border-radius:14px;padding:12px 9px;color:#52657d;font-weight:950;font-size:.98rem;box-shadow:var(--shadow-soft)}.seg button.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.gps-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.gps-btn{width:100%;border:1px solid #a9d4f6;background:#edf7ff;color:#066ab8;border-radius:16px;padding:14px;font-weight:950;margin-top:12px;font-size:1rem}
+.checks{display:grid;gap:10px}.checkrow{display:flex;align-items:center;gap:10px;padding:12px 12px;border:1px solid var(--line);border-radius:16px;background:#fbfdff}.checkrow span{font-size:.95rem;font-weight:850;flex:1;line-height:1.35}.yn{display:flex;gap:6px}.yn button{border:1px solid var(--line);background:#fff;border-radius:11px;padding:9px 11px;font-size:.88rem;font-weight:950;min-width:48px}.yn button.yes.active{background:var(--green);color:#fff;border-color:var(--green)}.yn button.no.active{background:var(--red);color:#fff;border-color:var(--red)}
+.primary-btn,.secondary-btn,.danger-btn{border:0;border-radius:17px;padding:15px 16px;font-weight:950;font-size:1rem;box-shadow:var(--shadow-soft)}.primary-btn{background:linear-gradient(135deg,#0875d1,#07579b);color:#fff}.secondary-btn{background:#fff;border:1px solid var(--line);color:var(--text)}.danger-btn{background:#fff1f0;color:var(--red);border:1px solid #f7c6c2}.full{width:100%}.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.btnrow>*{flex:1 1 160px}
+.lum-card{border:1px solid var(--line);border-radius:18px;padding:14px;background:linear-gradient(180deg,#fff 0%,#fbfdff 100%);margin:10px 0;box-shadow:var(--shadow-soft)}.lum-head{display:flex;align-items:center;gap:8px}.lum-head b{flex:1;font-size:1rem}.chip{display:inline-flex;padding:6px 8px;border-radius:999px;font-size:.78rem;font-weight:950;background:#edf4fb;color:#395672}.chip.led{background:#e5f8ec;color:#0a8b49}.chip.sodio{background:#fff4d8;color:#9a6a00}.chip.bad{background:#fde9e7;color:#b42318}.lum-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;font-size:.88rem;color:var(--muted)}.lum-grid b{color:var(--text)}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.photo{aspect-ratio:1;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#f1f5f8;box-shadow:var(--shadow-soft)}.photo img{width:100%;height:100%;object-fit:cover}.photo.add{border:2px dashed #b8c7d6;display:grid;place-items:center;color:var(--blue);font-size:.9rem;font-weight:900;text-align:center;padding:6px;background:#fbfdff}.photo.add.disabled{opacity:.45;pointer-events:none}
+.summarybox{background:#f8fbfe;border:1px solid var(--line);border-radius:18px;padding:16px;font-size:1rem;line-height:1.7;color:#32465e;white-space:pre-wrap}.export-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.export-btn{border:1px solid var(--line);background:#fff;border-radius:16px;padding:14px 8px;font-weight:950;color:var(--text);font-size:.95rem;box-shadow:var(--shadow-soft)}.export-btn .eico{display:block;font-size:1.5rem;margin-bottom:7px}.notice{padding:13px;border-radius:16px;font-size:.95rem;font-weight:780;line-height:1.5}.notice.green{background:#e9f8ef;color:#087643;border:1px solid #c8edd8}.notice.blue{background:#edf7ff;color:#075f9f;border:1px solid #cde7fb}.notice.amber{background:#fff8e8;color:#865c00;border:1px solid #f4dea7}
+.bottomnav{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom));z-index:30;box-shadow:0 -8px 22px rgba(15,38,71,.08)}.navbtn{background:transparent;border:0;color:#62758c;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.78rem;font-weight:900;padding:6px}.navbtn b{font-size:1.35rem;line-height:1}.navbtn.active{color:var(--blue)}
+.modal{position:fixed;inset:0;background:rgba(7,26,43,.58);display:none;align-items:flex-end;justify-content:center;z-index:50}.modal.open{display:flex}.sheet{width:min(720px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:28px 28px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -18px 50px rgba(0,0,0,.18)}.sheet h3{margin:2px 0 14px;font-size:1.4rem;letter-spacing:-.03em}.closex{float:right;border:0;background:#eef3f7;border-radius:12px;padding:8px 11px;color:var(--text);font-weight:950}
+.toast{position:fixed;left:50%;bottom:94px;transform:translateX(-50%) translateY(20px);background:#102235;color:#fff;padding:12px 14px;border-radius:14px;font-size:.92rem;z-index:100;opacity:0;pointer-events:none;transition:.18s;max-width:92vw;text-align:center;line-height:1.45}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.small{font-size:.88rem;color:var(--muted)}.muted{color:var(--muted)}.mt8{margin-top:8px}.mt12{margin-top:12px}.nowrap{white-space:nowrap}.readonly{background:#f3f6f9!important;color:#53677e!important}
+.loginmodal{align-items:center;padding:18px}.loginmodal .sheet{border-radius:28px;max-width:520px;padding:26px}.login-lock{width:72px;height:72px;border-radius:22px;margin:0 auto 14px;background:linear-gradient(135deg,#e3f0ff,#f7fbff);color:var(--blue);display:grid;place-items:center;font-size:2rem}.login-title{text-align:center;margin:0 0 8px;font-size:2rem;letter-spacing:-.04em}.login-sub{text-align:center;color:var(--muted);font-size:1rem;line-height:1.55;margin-bottom:22px}
+.order-actions{display:flex;gap:8px;margin-top:12px}.order-actions button{flex:1;border-radius:13px;padding:11px 10px;font-size:.9rem;font-weight:950}
+.finding-list{display:grid;gap:8px}.finding-item{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:14px;padding:11px;background:#fbfdff}.finding-item input{margin-top:3px;transform:scale(1.15)}.finding-item span{font-size:.94rem;font-weight:780;line-height:1.45}
+.state-readonly{border-radius:16px;padding:13px 12px;font-weight:950;text-align:center;font-size:1rem}.state-ok{background:#e8f8ef;color:#087b44}.state-warn{background:#fff5da;color:#8b6200}.state-bad{background:#fde9e7;color:#b42318}.ruleline{font-size:.88rem;color:var(--muted);margin-top:7px;line-height:1.45}
+@media(min-width:760px){
+  main{padding:22px 20px}
+  .kpi-grid{grid-template-columns:repeat(4,1fr)}
+  .actions{grid-template-columns:repeat(2,1fr)}
+  .grid.two,.grid.desktop2{grid-template-columns:1fr 1fr}
+  .photo-grid{grid-template-columns:repeat(4,1fr)}
+  .bottomnav{left:50%;right:auto;transform:translateX(-50%);width:min(760px,100%);border:1px solid var(--line);border-bottom:0;border-radius:20px 20px 0 0}
+  .sheet{border-radius:28px;margin-bottom:18px;max-height:88vh}
+  .modal{align-items:center}
+}
+@media(max-width:540px){
+  .appbar{padding:14px 14px}
+  .brand b{font-size:1.7rem}
+  .brand span{font-size:.9rem}
+  .offline{font-size:.82rem;padding:9px 12px}
+  .toolbar h2{font-size:1.32rem}
+  .kpi .n{font-size:1.95rem}
+  .action span{font-size:1rem}
+  .photo-grid{grid-template-columns:repeat(3,1fr)}
+  .export-grid{grid-template-columns:1fr}
+}
+.multi-select{border:1px solid #d9dee7;border-radius:14px;background:#fff;overflow:hidden}.multi-select summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:10px 14px;cursor:pointer;font-weight:700}.multi-select summary::-webkit-details-marker{display:none}.multi-select[open] summary{border-bottom:1px solid #e6eaf0}.finding-list.compact{max-height:250px;overflow:auto;padding:6px}.finding-list.compact .finding-item{padding:9px 10px;margin:0}.hidden{display:none!important}
+
+
+/* ===== AP Inventory v0.5.3 · refinamiento visual ===== */
+:root{
+  --blue:#0b62a9;--blue-deep:#073a70;--blue2:#1688e6;--blue-soft:#edf6ff;
+  --green:#0faa63;--green-2:#07884d;--green-soft:#eaf8f1;
+  --amber:#efa928;--red:#d43b31;
+  --bg:#eef4fa;--bg-2:#f8fbfe;--card:#ffffff;--text:#13263c;--muted:#64788d;
+  --line:#dbe6f0;--line-strong:#c8d8e8;
+  --shadow:0 14px 36px rgba(14,48,82,.085);--shadow-soft:0 5px 18px rgba(18,53,87,.065);
+  --r:22px;--r2:17px;--max:1120px;
+}
+html,body{background:linear-gradient(180deg,#f8fbfe 0%,#eef4fa 46%,#edf3f8 100%)}
+body{padding-bottom:94px}
+button,input,select,textarea,summary{font:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:active{transform:translateY(1px)}
+
+.appbar{
+  padding:12px 14px;
+  background:linear-gradient(120deg,#073d74 0%,#075ca5 48%,#1182d5 100%);
+  box-shadow:0 8px 24px rgba(5,46,84,.18);
+  border-bottom:1px solid rgba(255,255,255,.12)
+}
+.appbar .row{gap:11px}
+.brandmark{width:44px;height:44px;border-radius:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 5px 14px rgba(3,39,73,.14)}
+.brandmark svg{width:29px;height:29px}
+.brand b{font-size:1.68rem;letter-spacing:-.035em}
+.brand span{font-size:.86rem;margin-top:3px;opacity:.9}
+.offline{padding:8px 11px;font-size:.8rem;border-radius:12px;background:rgba(255,255,255,.12)!important}
+
+main{padding:16px 14px 18px}
+.home-layout{display:grid;grid-template-columns:1fr;gap:12px;align-items:start}
+.home-layout>div{min-width:0}
+.right-rail{min-width:0}
+.card{border-radius:20px;padding:16px;margin:12px 0;box-shadow:var(--shadow);border-color:#dce7f1}
+.hero{margin-top:4px;padding:17px;background:linear-gradient(135deg,#fff 0%,#f8fbff 55%,#ebf5ff 100%)}
+.hero::after{right:-56px;top:-62px;width:180px;height:180px;opacity:.8}
+.crew{gap:12px}
+.avatar{width:52px;height:52px;border-radius:16px;font-size:1.55rem}
+.crew-info b{font-size:1.08rem}
+.crew-info span{font-size:.9rem}
+.tiny-btn{padding:9px 12px;border-radius:13px;font-size:.88rem;box-shadow:none}
+
+.kpi-grid{gap:9px}
+.kpi{min-height:92px;padding:13px;border-radius:18px;gap:11px;box-shadow:var(--shadow-soft)}
+.kpi .ico{width:42px;height:42px;border-radius:13px;font-size:1.22rem;flex:0 0 42px}
+.kpi .n{font-size:1.8rem}
+.kpi .l{font-size:.84rem;margin-top:4px;font-weight:800}
+
+.actions{gap:9px;margin-top:10px}
+.action{min-height:70px;border-radius:18px;padding:13px 14px;gap:12px;box-shadow:var(--shadow-soft);position:relative;overflow:hidden}
+.action .ico{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:#eff6fc;font-size:1.15rem;flex:0 0 36px;color:var(--blue)}
+.action span{font-size:.98rem;line-height:1.14;min-width:0}
+.action small{font-size:.81rem;margin-top:4px;line-height:1.28}
+.action:not(.primary):not(.success)::after{content:'›';margin-left:auto;color:#8ea0b2;font-size:1.45rem;font-weight:500}
+.action.primary .ico,.action.success .ico{background:rgba(255,255,255,.17);color:#fff}
+.action.primary{background:linear-gradient(135deg,#0d7fd6,#07599e)}
+.action.success{background:linear-gradient(135deg,#14ad68,#0a8d50)}
+
+.toolbar{gap:10px;margin:3px 0 10px}
+.toolbar h2{font-size:1.32rem}
+.back{width:42px;height:42px;padding:0;display:grid;place-items:center;border-radius:13px;box-shadow:none;font-size:1.05rem}
+.tabs{gap:6px}
+.tab{padding:8px 12px;font-size:.84rem;border-radius:12px;box-shadow:none}
+.searchbox{padding:12px 14px;border-radius:14px;font-size:.96rem;margin:10px 0 4px;box-shadow:none}
+.order-card{padding:14px;border-radius:18px;margin:9px 0;box-shadow:var(--shadow-soft)}
+.order-num{font-size:1.16rem}
+.badge{font-size:.72rem;padding:6px 8px}
+.order-meta{font-size:.86rem}
+.progressbar{height:7px;margin:11px 0 9px}
+.order-stats{font-size:.82rem}
+.order-actions{gap:7px;margin-top:10px}
+.order-actions button{padding:9px 9px;font-size:.82rem}
+
+.section-title{font-size:.98rem;margin:1px 0 12px;gap:8px}
+.section-title .dot{width:8px;height:8px}
+.grid{gap:10px}
+.field label{font-size:.86rem;margin-bottom:6px;color:#4b6075;font-weight:850}
+.field input,.field select,.field textarea{padding:12px 13px;border-radius:14px;font-size:.96rem;background:#fff;box-shadow:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#76b4e7;box-shadow:0 0 0 3px rgba(82,162,224,.13)}
+.field textarea{min-height:86px}
+.field .hint,.ruleline{font-size:.8rem;line-height:1.35}
+.seg{gap:6px}
+.seg button{padding:10px 8px;border-radius:12px;font-size:.9rem;box-shadow:none}
+.gps-row{gap:8px}
+.gps-btn{padding:12px;border-radius:14px;font-size:.92rem;margin-top:9px}
+.primary-btn,.secondary-btn,.danger-btn{padding:13px 14px;border-radius:14px;font-size:.93rem;box-shadow:none}
+.btnrow{gap:8px;margin-top:11px}
+
+.notice{padding:11px 12px;border-radius:13px;font-size:.86rem;line-height:1.42}
+.state-readonly{padding:11px 10px;border-radius:13px;font-size:.88rem;letter-spacing:.005em}
+
+.multi-select{border-color:var(--line-strong);border-radius:14px;box-shadow:none}
+.multi-select summary{min-height:46px;padding:9px 12px;font-size:.91rem;background:#fff}
+.multi-select summary b{width:27px;height:27px;border-radius:9px;background:#eef5fb;color:#3f607e;display:grid;place-items:center;font-size:.8rem;transition:transform .16s ease}
+.multi-select[open] summary b{transform:rotate(180deg)}
+.finding-list.compact{max-height:228px;padding:5px;background:#f7fafc}
+.finding-list.compact .finding-item{padding:9px 9px;border-radius:11px;background:#fff;border-color:#e4ecf3;gap:9px}
+.finding-item input{accent-color:var(--blue);width:17px;height:17px;margin-top:1px;transform:none}
+.finding-item span{font-size:.84rem;line-height:1.3;font-weight:760}
+
+.photo-grid{gap:8px}
+.photo{border-radius:12px;box-shadow:none}
+.photo.add{font-size:.8rem;background:#fafcff}
+.lum-card{padding:12px;border-radius:16px;margin:8px 0;box-shadow:var(--shadow-soft)}
+.lum-head b{font-size:.94rem}
+.lum-grid{font-size:.81rem}
+.chip{font-size:.7rem;padding:5px 7px}
+.summarybox{padding:14px;border-radius:15px;font-size:.91rem;line-height:1.55}
+.export-grid{gap:8px}
+.export-btn{padding:12px 7px;border-radius:14px;font-size:.86rem;box-shadow:none}
+.export-btn .eico{font-size:1.3rem;margin-bottom:5px}
+
+.bottomnav{padding:6px max(8px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom));box-shadow:0 -6px 18px rgba(15,38,71,.07)}
+.navbtn{font-size:.7rem;gap:3px;padding:5px;border-radius:11px}
+.navbtn b{font-size:1.18rem}
+.navbtn.active{background:#eef6fd;color:var(--blue)}
+
+.modal{background:rgba(8,26,43,.48);backdrop-filter:blur(2px)}
+.sheet{border-radius:24px 24px 0 0;padding:16px 16px calc(17px + env(safe-area-inset-bottom));box-shadow:0 -16px 42px rgba(0,0,0,.16)}
+.sheet::before{content:'';display:block;width:42px;height:4px;border-radius:99px;background:#d7e0e8;margin:-4px auto 11px}
+.sheet h3{font-size:1.22rem;margin:1px 0 12px}
+.closex{border-radius:10px;padding:7px 10px;font-size:.86rem}
+.loginmodal .sheet{padding:22px;border-radius:24px}
+.login-lock{width:62px;height:62px;border-radius:19px;font-size:1.7rem}
+.login-title{font-size:1.72rem}
+.login-sub{font-size:.91rem;margin-bottom:17px}
+.toast{font-size:.84rem;border-radius:12px;padding:10px 12px}
+
+@media(min-width:760px){
+  main{padding:20px 18px}
+  .home-layout{grid-template-columns:minmax(250px,.72fr) minmax(0,1.65fr);gap:16px}
+  .hero{position:sticky;top:90px;margin:0;min-height:184px;display:flex;align-items:center}
+  .crew{align-items:flex-start;flex-wrap:wrap}
+  .crew-info{flex-basis:calc(100% - 66px)}
+  .hero .tiny-btn{margin-left:64px}
+  .right-rail .kpi-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .actions.two-col{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid.two,.grid.desktop2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sheet{border-radius:24px;max-height:88vh}
+}
+@media(max-width:540px){
+  .appbar{padding:10px 12px}
+  .brandmark{width:40px;height:40px;border-radius:12px}
+  .brand b{font-size:1.48rem}
+  .brand span{font-size:.78rem}
+  .offline{font-size:0;width:34px;height:34px;padding:0;border-radius:50%;display:grid;place-items:center}
+  .offline::first-letter{font-size:.88rem}
+  main{padding:12px 11px 16px}
+  .card{padding:14px;border-radius:18px;margin:10px 0}
+  .hero{padding:14px}
+  .avatar{width:46px;height:46px;border-radius:14px;font-size:1.35rem}
+  .crew-info b{font-size:1rem}
+  .crew-info span{font-size:.82rem}
+  .tiny-btn{padding:8px 10px;font-size:.8rem}
+  .kpi-grid{gap:7px}
+  .kpi{min-height:80px;padding:10px;border-radius:16px;gap:8px}
+  .kpi .ico{width:35px;height:35px;flex-basis:35px;border-radius:11px;font-size:1rem}
+  .kpi .n{font-size:1.55rem}
+  .kpi .l{font-size:.75rem}
+  .actions{gap:7px}
+  .action{min-height:62px;padding:11px 12px;border-radius:16px}
+  .action .ico{width:32px;height:32px;flex-basis:32px;border-radius:10px;font-size:1rem}
+  .action span{font-size:.9rem}
+  .action small{font-size:.74rem}
+  .toolbar h2{font-size:1.16rem}
+  .section-title{font-size:.91rem}
+  .field label{font-size:.82rem}
+  .field input,.field select,.field textarea{font-size:.93rem;padding:11px 12px}
+  .grid.desktop2,.grid.two{grid-template-columns:1fr}
+  .gps-row{grid-template-columns:1fr 1fr}
+  .export-grid{grid-template-columns:1fr}
+  .photo-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(hover:hover) and (pointer:fine){
+  .action:hover,.kpi:hover,.order-card:hover{border-color:#c7d9e8;box-shadow:0 10px 26px rgba(14,48,82,.10)}
+  .tiny-btn:hover,.secondary-btn:hover,.back:hover,.tab:hover{background:#f5f9fd}
+}
+@media(prefers-reduced-motion:no-preference){
+  .action,.kpi,.order-card,.primary-btn,.secondary-btn,.tiny-btn,.tab{transition:box-shadow .16s ease,border-color .16s ease,background-color .16s ease,transform .08s ease}
+}
+
+</style>
+</head>
+<body>
+<header class="appbar">
+  <div class="row">
+    <div class="brandmark" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none"><path d="M18 55V22c0-6 4-10 10-10h9" stroke="white" stroke-width="5" stroke-linecap="round"/><path d="M36 13h14l-6 8H32l4-8Z" fill="white"/><path d="M18 55h11" stroke="white" stroke-width="5" stroke-linecap="round"/></svg></div>
+    <div class="brand"><b>AP Inventory</b><span>Inventario de Alumbrado Público</span></div>
+    <div class="offline" id="netBadge">● Offline listo</div>
+  </div>
+</header>
+<main>
+  <section class="screen active" id="screenHome">
+    <div class="home-layout"><div><div class="card hero">
+      <div class="crew"><div class="avatar">👷</div><div class="crew-info"><b id="crewLabel">Equipo de Campo</b><span id="userLabel">Trabajo local sin conexión</span></div><button class="tiny-btn" id="btnSettings">Perfil</button></div>
+    </div>
+    </div><div class="right-rail"><div class="kpi-grid">
+      <div class="kpi"><div class="ico">▤</div><div><div class="n" id="kOrders">0</div><div class="l">Órdenes asignadas</div></div></div>
+      <div class="kpi"><div class="ico">⚡</div><div><div class="n" id="kStructures">0</div><div class="l">Estructuras AP</div></div></div>
+      <div class="kpi green"><div class="ico">💡</div><div><div class="n" id="kLums">0</div><div class="l">Luminarias</div></div></div>
+      <div class="kpi"><div class="ico">☁</div><div><div class="n" id="kPending">0</div><div class="l">Pendientes de sincronizar</div></div></div>
+    </div>
+    <div class="actions two-col">
+      <button class="action primary" id="btnImport"><span class="ico">📄</span><span>Cargar TXT<small>Importar órdenes asignadas a la cuadrilla</small></span></button>
+      <button class="action success" id="btnInventory"><span class="ico">⚡</span><span>Realizar inventario<small>Registrar estructuras y luminarias</small></span></button>
+      <button class="action" id="btnRecords"><span class="ico">☷</span><span>Ver registros<small>Consultar órdenes, avance y resúmenes</small></span></button>
+      <button class="action" id="btnExport"><span class="ico">⇧</span><span>Exportar<small>Excel, KMZ, JSON, TXT y ZIP por orden</small></span></button>
+      <button class="action" id="btnSync"><span class="ico">☁</span><span>Sincronizar<small>Preparar envío a OneDrive / SharePoint</small></span></button>
+    </div>
+    <input type="file" id="txtInput" accept=".txt,.csv,text/plain,text/csv" class="hidden" />
+  </section>
+
+  <section class="screen" id="screenOrders">
+    <div class="toolbar"><button class="back" data-go="home">←</button><h2>Órdenes asignadas</h2><button class="tiny-btn" id="btnImport2">+ TXT</button></div>
+    <div class="tabs"><button class="tab active" data-filter="all">Todas</button><button class="tab" data-filter="progress">En proceso</button><button class="tab" data-filter="done">Inventario completo</button><button class="tab" data-filter="pending">Pendientes</button></div>
+    <input class="searchbox" id="orderSearch" placeholder="Buscar por orden, CD o sector…" autocomplete="off" />
+    <div id="ordersList"></div>
+  </section>
+
+  <section class="screen" id="screenStructure">
+    <div class="toolbar"><button class="back" id="backFromStructure">←</button><h2>Nueva estructura AP</h2></div>
+    <div class="card flat"><div class="notice blue" id="activeOrderNotice">Selecciona una orden para comenzar.</div></div>
+    <div class="card">
+      <div class="section-title"><span class="dot"></span>Información general</div>
+      <div class="grid desktop2">
+        <div class="field"><label>Orden *</label><input id="stOrder" readonly /></div>
+        <div class="field"><label>CD *</label><input id="stCd" placeholder="Ej. E942TR1" autocomplete="off" /></div>
+        <div class="field"><label>Punto físico / Nodo *</label><input id="stNode" placeholder="Ej. BT-034" autocomplete="off" /></div>
+        <div class="field"><label>Clasificación de la estructura *</label><div class="seg" id="classSeg"><button data-v="MT">MT</button><button data-v="BT" class="active">BT</button><button data-v="CD">CD</button></div></div>
+        <div class="field"><label>Material *</label><select id="stMaterial"><option value="">Selecciona…</option><option>HORMIGÓN</option><option>MADERA</option><option>METÁLICO</option><option>FIBRA DE VIDRIO</option><option>OTRA / NO IDENTIFICADA</option></select></div>
+        <div class="field"><label>Características *</label><select id="stChar"><option value="">Selecciona tipo y material…</option></select></div>
+        <div class="field" id="btNetworkWrap"><label>Tipo de red BT *</label><select id="stNetwork"><option value="">Selecciona…</option><option>ABIERTA</option><option>MIXTA</option><option>TRENZADA</option><option>NO APLICA</option></select></div>
+        <div class="field"><label>Longitud del brazo de luminaria (m) *</label><input id="stArmLength" inputmode="decimal" placeholder="Ej. 1.5" /></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title"><span class="dot"></span>Ubicación (GPS)</div>
+      <div class="gps-row"><div class="field"><label>Latitud</label><input id="stLat" readonly placeholder="GPS" /></div><div class="field"><label>Longitud</label><input id="stLon" readonly placeholder="GPS" /></div></div>
+      <div class="field mt8"><label>Precisión (m)</label><input id="stAcc" readonly placeholder="GPS" /></div>
+      <button class="gps-btn" id="btnGps">⌖ Obtener ubicación actual</button>
+    </div>
+    <div class="card">
+      <div class="section-title"><span class="dot"></span>Estado técnico de la estructura</div>
+      <div class="field"><label>¿Presenta novedades visibles? *</label><div class="seg" id="stNoveltySeg"><button data-v="NO" class="active">No</button><button data-v="SI">Sí</button></div></div>
+      <div class="field mt12 hidden" id="stFindingsWrap"><label>Novedades de la estructura *</label><details class="multi-select"><summary><span id="stFindingsSummary">Seleccionar novedades</span><b>▾</b></summary><div class="finding-list compact" id="stFindings"></div></details><div class="hint">Opciones ajustadas automáticamente al material seleccionado.</div></div>
+      <div class="grid two mt12"><div class="field"><label>Estado técnico</label><div class="state-readonly state-ok" id="stCalculatedState">SIN NOVEDAD</div></div><div class="field"><label>Condición de seguridad</label><div class="state-readonly state-ok" id="stSecurityState">SIN CONDICIÓN CRÍTICA</div></div></div>
+    </div>
+    <div class="card">
+      <div class="section-title"><span class="dot"></span>Fotografías de la estructura <span class="small" id="photoCount">0 / 10</span></div>
+      <div class="photo-grid" id="photoGrid"><label class="photo add" for="stPhotos">📁<br>Cargar fotos</label></div><div class="ruleline">Obligatorio: mínimo 5 y máximo 10 fotografías cargadas desde el dispositivo.</div>
+      <input class="hidden" type="file" id="stPhotos" accept="image/*" multiple />
+      <div class="field mt12"><label>Observaciones de estructura</label><textarea id="stObs" placeholder="Opcional. Registra únicamente información adicional que no quede cubierta por los campos anteriores."></textarea></div>
+    </div>
+    <button class="primary-btn full" id="btnSaveStructure">Guardar estructura y agregar luminarias</button>
+  </section>
+
+  <section class="screen" id="screenStructureDetail">
+    <div class="toolbar"><button class="back" id="backFromDetail">←</button><h2>Luminarias de la estructura</h2></div>
+    <div class="card" id="structureSummary"></div>
+    <div class="card"><div class="section-title"><span class="dot"></span>Luminarias registradas <span class="small" id="lumCount"></span></div><div id="lumList"></div><button class="primary-btn full mt8" id="btnAddLum">+ Agregar luminaria</button></div>
+    <div class="btnrow"><button class="secondary-btn" id="btnNewStructureSameOrder">+ Otra estructura</button><button class="primary-btn" id="btnGoOrderSummary">Ver resumen de orden</button></div>
+  </section>
+
+  <section class="screen" id="screenSummary">
+    <div class="toolbar"><button class="back" id="backFromSummary">←</button><h2>Resumen de orden</h2></div>
+    <div class="card" id="summaryStatus"></div>
+    <div class="kpi-grid" id="summaryKpis"></div>
+    <div class="card"><div class="section-title"><span class="dot"></span>Resumen generado</div><div class="summarybox" id="summaryText"></div><div class="btnrow"><button class="primary-btn" id="btnCopySummary">▣ Copiar resumen</button><button class="secondary-btn" id="btnDownloadOrderTxt">TXT de esta orden</button><button class="secondary-btn" id="btnDownloadOrderZip">ZIP de esta orden</button></div></div>
+    <div class="card"><div class="section-title"><span class="dot"></span>Exportar archivos</div><div class="export-grid"><button class="export-btn" id="btnOrderExcel"><span class="eico">📊</span>Excel</button><button class="export-btn" id="btnOrderKmz"><span class="eico">🗺️</span>KMZ</button><button class="export-btn" id="btnOrderJson"><span class="eico">{ }</span>JSON</button></div></div>
+  </section>
+
+  <section class="screen" id="screenExport">
+    <div class="toolbar"><button class="back" data-go="home">←</button><h2>Exportar</h2></div>
+    <div class="card"><div class="notice blue">Los archivos se generan directamente en el dispositivo. No necesitan conexión a internet. Para el técnico, la salida ideal es un ZIP por orden. Para Power Automate, la sincronización seguirá usando JSON estructurado.</div><div class="actions"><button class="action" id="btnAllExcel"><span class="ico">📊</span><span>Excel general<small>Resumen + estructuras + luminarias</small></span></button><button class="action" id="btnAllKmz"><span class="ico">🗺️</span><span>KMZ general<small>Estructuras AP con simbología y detalle</small></span></button><button class="action" id="btnDailyTxt"><span class="ico">📝</span><span>TXT de cierres<small>Resumen de todas las órdenes completadas</small></span></button><button class="action" id="btnAllJson"><span class="ico">{ }</span><span>JSON técnico<small>Paquete estructurado para consolidación</small></span></button><button class="action" id="btnAllZip"><span class="ico">🗜️</span><span>ZIP por orden<small>Generar paquetes ORDEN_FECHA.zip</small></span></button></div></div>
+  </section>
+
+  <section class="screen" id="screenSync">
+    <div class="toolbar"><button class="back" data-go="home">←</button><h2>Sincronización</h2></div>
+    <div class="card"><div class="notice amber"><b>Primera versión funcional:</b> el paquete de sincronización ya se genera con IDs únicos y datos estructurados. La conexión automática a OneDrive / SharePoint se configurará cuando tengamos la biblioteca/carpeta corporativa y el flujo de Power Automate.</div><div class="mt12 small" id="syncInfo"></div><button class="primary-btn full mt12" id="btnPrepareSync">Generar paquete de sincronización</button></div>
+  </section>
+</main>
+
+<nav class="bottomnav"><button class="navbtn active" data-go="home"><b>⌂</b>Inicio</button><button class="navbtn" data-go="orders"><b>▤</b>Órdenes</button><button class="navbtn" data-go="export"><b>⇧</b>Exportar</button><button class="navbtn" data-go="sync"><b>☁</b>Sync</button></nav>
+
+<div class="modal" id="lumModal"><div class="sheet"><button class="closex" data-close="lumModal">✕</button><h3>Agregar luminaria</h3><div class="grid two">
+  <div class="field"><label>Rótulo / Serial *</label><input id="lmSerial" placeholder="Ej. AP-034-01 o SIN RÓTULO" /></div>
+  <div class="field"><label>Tecnología *</label><select id="lmTech"><option value="">Selecciona…</option><option>LED</option><option>SODIO ALTA PRESIÓN</option><option>SODIO BAJA PRESIÓN</option><option>VAPOR DE MERCURIO</option><option>HALOGENURO METÁLICO</option><option>FLUORESCENTE</option><option>HALÓGENA</option><option>INCANDESCENTE</option><option>INDUCCIÓN ELECTROMAGNÉTICA</option><option>OTRA / NO IDENTIFICADA</option></select><div class="hint">La ayuda visual de tecnologías quedará disponible desde este control.</div></div>
+  <div class="field"><label>Tipo de luminaria *</label><select id="lmType"><option value="">Selecciona…</option><option>VIAL</option><option>REFLECTOR / PROYECTOR</option><option>DECORATIVA</option><option>PEATONAL</option><option>SOLAR / FOTOVOLTAICA</option><option>OTRA / NO IDENTIFICADA</option></select></div>
+  <div class="field"><label>Potencia (W) *</label><input id="lmPower" inputmode="numeric" placeholder="Ej. 100" /></div>
+  <div class="field"><label>Alimentación *</label><select id="lmSupply"><option value="">Selecciona…</option><option>RED ELÉCTRICA</option><option>FOTOVOLTAICA</option><option>HÍBRIDA</option><option>OTRA / NO IDENTIFICADA</option></select></div>
+  <div class="field"><label>Sistema de control *</label><select id="lmControl"><option value="">Selecciona…</option><option>FOTOCELDA</option><option>TELEGESTIÓN</option><option>TEMPORIZADOR</option><option>SIN CONTROL</option><option>OTRO / NO IDENTIFICADO</option></select></div>
+  <div class="field"><label>Clasificación *</label><select id="lmClass"><option value="">Selecciona…</option><option>ENEL</option><option>ALCALDÍA</option><option>PROPIEDAD HORIZONTAL</option><option>OTRA / NO IDENTIFICADA</option></select></div>
+</div>
+<div class="field mt12"><label>¿Presenta novedades visibles? *</label><div class="seg" id="lmNoveltySeg"><button data-v="NO" class="active">No</button><button data-v="SI">Sí</button></div></div>
+<div class="field mt12 hidden" id="lmFindingsWrap"><label>Novedades de la luminaria *</label><details class="multi-select"><summary><span id="lmFindingsSummary">Seleccionar novedades</span><b>▾</b></summary><div class="finding-list compact" id="lumFindings"></div></details><div class="hint">Opciones ajustadas a tecnología, alimentación y sistema de control.</div></div>
+<div class="grid two mt12"><div class="field"><label>Estado funcional</label><div class="state-readonly state-ok" id="lumCalculatedState">OPERATIVA</div></div><div class="field"><label>Condición de seguridad</label><div class="state-readonly state-ok" id="lumSecurityState">SIN CONDICIÓN CRÍTICA</div></div></div>
+<div class="field mt12"><label>Fotografías de la luminaria *</label><div class="photo-grid" id="lumPhotoGrid"><label class="photo add" for="lmPhotos">📁<br>Cargar fotos</label></div><input class="hidden" type="file" id="lmPhotos" accept="image/*" multiple /><div class="ruleline" id="lumPhotoCount">0 / 10 · mínimo 5</div></div>
+<div class="field mt12"><label>Observaciones</label><textarea id="lmObservation" placeholder="Opcional. Registra únicamente información adicional que no quede cubierta por los campos anteriores."></textarea></div>
+<button class="primary-btn full mt12" id="btnSaveLum">Guardar luminaria</button></div></div>
+
+<div class="modal" id="settingsModal"><div class="sheet"><button class="closex" data-close="settingsModal">✕</button><h3>Usuario y cuadrilla</h3><div class="field"><label>Técnico</label><input id="setName" class="readonly" readonly /></div><div class="field mt12"><label>Correo corporativo</label><input id="setEmail" class="readonly" readonly /></div><div class="field mt12"><label>Código de cuadrilla</label><input id="setCrew" class="readonly" readonly /></div><button class="secondary-btn full mt8" id="btnChangeUser">Cambiar usuario</button></div></div>
+<div class="modal loginmodal" id="loginModal"><div class="sheet"><div class="login-lock">👤</div><h2 class="login-title">AP Inventory</h2><div class="login-sub">Ingresa una sola vez con tu correo corporativo. Este dispositivo conservará tu usuario para las siguientes jornadas.</div><div class="field"><label>Correo corporativo</label><input id="loginEmail" type="email" placeholder="nombre@applusglobal.com" autocomplete="email" /></div><button class="primary-btn full mt12" id="btnLogin">Ingresar</button><div class="notice blue mt12 hidden" id="loginMatched"></div></div></div>
+<div class="toast" id="toast"></div>
+<script>
+const $=id=>document.getElementById(id);
+const qsa=s=>[...document.querySelectorAll(s)];
+const DB_NAME='APInventoryDB', DB_VER=1;
+let db=null, activeOrderId=null, activeStructureId=null, orderFilter='all', stClass='BT', selectedPhotos=[], selectedLumPhotos=[];
+const STRUCTURE_FINDINGS_COMMON=[
+{id:'ST_INCLINATION',label:'INCLINACIÓN VISIBLE RESPECTO A LA VERTICAL',technical:1,safety:1},{id:'ST_BASE_SCOUR',label:'BASE CON SOCAVACIÓN VISIBLE',technical:1,safety:1},{id:'ST_BASE_LOSS',label:'BASE CON PÉRDIDA DE MATERIAL',technical:1,safety:1},{id:'ST_EMBED_BAD',label:'EMPOTRAMIENTO VISIBLEMENTE DEFICIENTE',technical:2,safety:2},{id:'ST_BASE_MOVEMENT',label:'MOVIMIENTO VISIBLE EN LA BASE DE LA ESTRUCTURA',technical:2,safety:2}];
+const STRUCTURE_FINDINGS_BY_MATERIAL={
+'HORMIGÓN':[{id:'CO_LONG_CRACK',label:'FISURAS LONGITUDINALES VISIBLES',technical:1,safety:0},{id:'CO_TRANS_CRACK',label:'FISURAS TRANSVERSALES VISIBLES',technical:1,safety:0},{id:'CO_MULTI_CRACK',label:'FISURAS MÚLTIPLES EN EL CUERPO DEL POSTE',technical:1,safety:1},{id:'CO_SPALL',label:'DESCASCARAMIENTO DEL RECUBRIMIENTO DE HORMIGÓN',technical:1,safety:0},{id:'CO_SECTION_LOSS',label:'PÉRDIDA LOCALIZADA DE SECCIÓN DE HORMIGÓN',technical:2,safety:1},{id:'CO_REBAR_EXPOSED',label:'ACERO DE REFUERZO EXPUESTO',technical:1,safety:1},{id:'CO_REBAR_CORROSION',label:'ACERO DE REFUERZO CON CORROSIÓN VISIBLE',technical:2,safety:1},{id:'CO_PARTIAL_FRACTURE',label:'FRACTURA PARCIAL DEL CUERPO DEL POSTE',technical:2,safety:2},{id:'CO_STRUCT_BREAK',label:'ROTURA ESTRUCTURAL VISIBLE',technical:2,safety:2}],
+'METÁLICO':[{id:'ME_CORR_SURF',label:'CORROSIÓN SUPERFICIAL',technical:1,safety:0},{id:'ME_CORR_GEN',label:'CORROSIÓN GENERALIZADA',technical:1,safety:1},{id:'ME_CORR_LOSS',label:'CORROSIÓN AVANZADA CON PÉRDIDA VISIBLE DE MATERIAL',technical:2,safety:1},{id:'ME_PERFORATION',label:'PERFORACIÓN POR CORROSIÓN',technical:2,safety:2},{id:'ME_SECTION_LOSS',label:'PÉRDIDA VISIBLE DE SECCIÓN METÁLICA',technical:2,safety:2},{id:'ME_DEFORM',label:'DEFORMACIÓN DEL CUERPO DE LA ESTRUCTURA',technical:1,safety:1},{id:'ME_CRACK',label:'FISURA EN ELEMENTO METÁLICO',technical:2,safety:1},{id:'ME_BREAK',label:'ROTURA PARCIAL DEL ELEMENTO METÁLICO',technical:2,safety:2}],
+'MADERA':[{id:'WO_ROT_SURF',label:'PUDRICIÓN SUPERFICIAL',technical:1,safety:0},{id:'WO_ROT_DEEP',label:'PUDRICIÓN PROFUNDA VISIBLE',technical:2,safety:2},{id:'WO_SECTION_LOSS',label:'PÉRDIDA VISIBLE DE SECCIÓN DE MADERA',technical:2,safety:2},{id:'WO_LONG_CRACK',label:'FISURA LONGITUDINAL',technical:1,safety:0},{id:'WO_TRANS_CRACK',label:'FISURA TRANSVERSAL',technical:1,safety:1},{id:'WO_MULTI_CRACK',label:'FISURAS MÚLTIPLES',technical:1,safety:1},{id:'WO_FRACTURE',label:'FRACTURA PARCIAL DE LA ESTRUCTURA',technical:2,safety:2},{id:'WO_BREAK',label:'ROTURA VISIBLE DEL CUERPO DEL POSTE',technical:2,safety:2},{id:'WO_INSECT',label:'PERFORACIONES ASOCIADAS A ATAQUE DE INSECTOS',technical:1,safety:1},{id:'WO_GALLERIES',label:'GALERÍAS VISIBLES EN LA MADERA',technical:2,safety:1}],
+'FIBRA DE VIDRIO':[{id:'FV_CRACK',label:'FISURA VISIBLE EN LA SUPERFICIE',technical:1,safety:0},{id:'FV_DELAM',label:'DELAMINACIÓN VISIBLE',technical:1,safety:1},{id:'FV_EXPOSED',label:'FIBRAS EXPUESTAS',technical:1,safety:1},{id:'FV_LAYER_LOSS',label:'DESPRENDIMIENTO DE CAPAS SUPERFICIALES',technical:1,safety:1},{id:'FV_BREAK',label:'ROTURA PARCIAL',technical:2,safety:2},{id:'FV_MATERIAL_LOSS',label:'PÉRDIDA VISIBLE DE MATERIAL',technical:2,safety:1},{id:'FV_DEFORM',label:'DEFORMACIÓN PERMANENTE DEL CUERPO DE LA ESTRUCTURA',technical:2,safety:2},{id:'FV_CRUSH',label:'APLASTAMIENTO LOCALIZADO',technical:2,safety:2}],
+'OTRA / NO IDENTIFICADA':[]};
+const FEATURES={
+  'BT|FIBRA DE VIDRIO':['8MX510KGF','10MX510KGF','10MX750KGF','10MX1050KGF'],
+  'BT|HORMIGÓN':['8MX510KGF','10MX510KGF','10MX750KGF','10MX1050KGF'],
+  'BT|MADERA':['10M'],
+  'BT|METÁLICO':['8MX510KGF','10MX510KGF','10MX750KGF','10MX1050KGF'],
+  'MT|FIBRA DE VIDRIO':['12MX510KGF','12MX750KGF','12MX1050KGF','14MX750KGF','14MX1050KGF','16MX750KGF','16MX1050KGF'],
+  'MT|HORMIGÓN':['12MX510KGF','12MX750KGF','12MX1050KGF','14MX750KGF','14MX1050KGF','14MX1350KGF','16MX750KGF','16MX1050KGF','16MX1350KGF'],
+  'MT|MADERA':['12M','14M'],
+  'MT|METÁLICO':['12MX510KGF','12MX750KGF','12MX1050KGF','14MX750KGF','14MX1050KGF','14MX1350KGF','16MX750KGF','16MX1050KGF','16MX1350KGF'],
+  'CD|FIBRA DE VIDRIO':['8MX510KGF','10MX510KGF','12MX510KGF'],
+  'CD|HORMIGÓN':['8MX510KGF','10MX510KGF','12MX510KGF','12MX750KGF','14MX750KGF'],
+  'CD|MADERA':['10M','12M','14M'],
+  'CD|METÁLICO':['8MX510KGF','10MX510KGF','12MX510KGF','12MX750KGF']
+};
+const AUTHORIZED_USERS=[{"name":"AGUIAR OLIVERA EDUVINO","email":"eduvino.aguiar@applusglobal.com","crew":"1ELT"},{"name":"AMAYA TRIANA LUIS ALEJANDRO","email":"luis.amaya@applusglobal.com","crew":"44CV"},{"name":"ARDILA AMADO ELKIN","email":"elkin.ardila@applusglobal.com","crew":"1OPM"},{"name":"BABILONIA THOMAS FERNANDO LUIS","email":"fernando.babilonia@applusglobal.com","crew":"43CV"},{"name":"BAEZ JUAN CARLOS","email":"juan.baez@applusglobal.com","crew":"31CV"},{"name":"BARRAGAN BARRERA ANA MARIA","email":"ana.barragan.b@applusglobal.com","crew":"52OPM"},{"name":"BUITRAGO CUESTA JONATHAN ALEXIS","email":"jeferson.vasquez@applusglobal.com","crew":"41OPM"},{"name":"CARDENAS GOMEZ RAMIRO","email":"ramiro.cardenas@applusglobal.com","crew":"39OPM"},{"name":"CASTAÑEDA MINZON HERNAN","email":"minzon.castaneda@applusglobal.com","crew":"3CV"},{"name":"CAÑON GONZALEZ RICARDO IGNACIO","email":"ricardo.canon@applusglobal.com","crew":"2CV"},{"name":"DAZA MORENO DUBAN STIVEN","email":"duban.daza@applusglobal.com","crew":"6OPM"},{"name":"DIAZ CATILLA CARLOS ALBERTO","email":"carlos.a.diazz@applusglobal.com","crew":"44OPM"},{"name":"DIAZ RODRIGUEZ NELSON FERNANDO","email":"nelson.diaz@applusglobal.com","crew":"4ELT"},{"name":"FERNANDEZ SALAS JOHAN SEBASTIAN","email":"johann.fernandez@applusglobal.com","crew":"42CV"},{"name":"FONSECA SANTANA WILLIAM GIUSEPPE","email":"william.fonseca@applusglobal.com","crew":"34OPM"},{"name":"GALINDO TORRES HELVER MARTIN","email":"helver.galindo@applusglobal.com","crew":"7CV"},{"name":"GONZALEZ CIFUENTES SOFIA LORENA","email":"sofia.gonzales@applusglobal.com","crew":"45OPM"},{"name":"GUERRERO RODRIGUEZ KEVIN CAMILO","email":"kevin.guerrero@applusglobal.com","crew":"8OPM"},{"name":"GUEVARA PÉREZ ANTONY","email":"antony.guevara@applusglobal.com","crew":"24OPM"},{"name":"HEIDI DIAZ","email":"heidi.diaz@applusglobal.com","crew":"PRUEBA"},{"name":"HERNANDEZ SILVA JHON EDWAR","email":"jhon.hernandez@applusglobal.com","crew":"47CV"},{"name":"IZQUIERDO MURCIA CARLOS EDUARDO","email":"carlos.izquierdo@applusglobal.com","crew":"10OPM"},{"name":"JIMENEZ CASTILLO OSCAR FERNANDO","email":"oscar.jimenez.c@applusglobal.com","crew":"24CV"},{"name":"LOPEZ SUAREZ RICARDO ENRIQUE","email":"ricardo.lopez@applusglobal.com","crew":"11OPM"},{"name":"OLIVERO ROCHA IVAN DAVID","email":"ivan.olivero@applusglobal.com","crew":"47OPM"},{"name":"ORTIZ RODRIGUEZ CARLOS FELIPE","email":"carlos.ortiz@applusglobal.com","crew":"9CV"},{"name":"PERDOMO RAMIREZ CRISTIAN DAVID","email":"cristian.perdomo@applusglobal.com","crew":"14OPM"},{"name":"PEREZ PIRA RIVEL ESTEBAN","email":"rivel.perez@applusglobal.com","crew":"12CV"},{"name":"PEREZ ROA JOSE ALFREDO","email":"jose.diaz.c@applusglobal.com","crew":"50OPM"},{"name":"PINEDA AGUILAR WILKER DE JESUS","email":"wilker.pineda@applusglobal.com","crew":"13CV"},{"name":"PINZON TOVAR BRAYAN FELIPE","email":"brayan.pinzon@applusglobal.com","crew":"40OPM"},{"name":"PORRAS RODRIGUEZ BRIAM STEVENS","email":"briam.porras@applusglobal.com","crew":"33OPM"},{"name":"QUIJANO CARDOSO JOHN JAIRO","email":"john.quijano@applusglobal.com","crew":"15OPM"},{"name":"RAMIREZ BARAHONA FERNEY","email":"ferney.ramirez@applusglobal.com","crew":"16OPM"},{"name":"RAMIREZ CEPEDA BRAYAN HERNAN","email":"brayan.ramirez@applusglobal.com","crew":"20CV"},{"name":"RAMIREZ MARTINEZ MIGUEL ALEJANDRO","email":"miguel.ramirez@applusglobal.com","crew":"53OPM"},{"name":"REYES HERNANDEZ SEBASTIAN DAVID","email":"sebastian.reyes@applusglobal.com","crew":"40CV"},{"name":"ROBAYO BOHORQUEZ CARLOS ENRIQUE","email":"carlos.robayo@applusglobal.com","crew":"17OPM"},{"name":"ROJAS CRUZ KEVIN YESSITH","email":"kevin.rojas@applusglobal.com","crew":"33CV"},{"name":"ROMERO JOHN FREDY","email":"john.fredy.romero@applusglobal.com","crew":"7ELT"},{"name":"ROMERO SERNA LUIS CAMILO","email":"luis.romero.s@applusglobal.com","crew":"16CV"},{"name":"RONCANCIO RINCON FABIAN ANDRES","email":"fabian.roncancio@applusglobal.com","crew":"8ELT"},{"name":"SUAREZ CADENA CARLOS FELIPE","email":"carlos.suarez@applusglobal.com","crew":"19OPM"},{"name":"TIQUE TIQUE YECID","email":"yecid.tique@applus.com","crew":"36CV"},{"name":"TRIANA SOLER JOHN ALEXANDER","email":"john.triana@applusglobal.com","crew":"37OPM"},{"name":"VALBUENA LOZANO BRAYAN DAVID","email":"brayan.valbuena@applusglobal.com","crew":"50CV"},{"name":"VARGAS ROMERO JAIRO ANDRES","email":"jairo.vargas@applusglobal.com","crew":""},{"name":"VERGARA MANRIQUE VICTOR HERNAN","email":"victor.vergara@applusglobal.com","crew":"17CV"}];
+const LUM_FINDINGS_COMMON=[
+{id:'L_NO_LIGHT',label:'NO ENCIENDE',functional:2,safety:0},{id:'L_INTERMITTENT',label:'ENCENDIDO INTERMITENTE',functional:1,safety:0},{id:'L_FLICKER',label:'PARPADEO VISIBLE',functional:1,safety:0},{id:'L_DELAY',label:'ENCIENDE CON RETARDO',functional:1,safety:0},{id:'L_DAY_ON',label:'PERMANECE ENCENDIDA DURANTE EL DÍA',functional:1,safety:0},{id:'L_HOUSING_CRACK',label:'CARCASA FISURADA',functional:0,safety:1},{id:'L_HOUSING_BROKEN',label:'CARCASA ROTA',functional:1,safety:1},{id:'L_HOUSING_OPEN',label:'CARCASA ABIERTA',functional:1,safety:1},{id:'L_DIFF_BROKEN',label:'DIFUSOR O LENTE ROTO',functional:1,safety:1},{id:'L_DIFF_ABSENT',label:'DIFUSOR O LENTE AUSENTE',functional:1,safety:1},{id:'L_DIFF_LOOSE',label:'DIFUSOR O LENTE PARCIALMENTE DESPRENDIDO',functional:1,safety:2},{id:'L_MOISTURE',label:'HUMEDAD VISIBLE EN EL INTERIOR',functional:1,safety:1},{id:'L_WATER',label:'AGUA ACUMULADA EN EL INTERIOR',functional:1,safety:2},{id:'L_DISC',label:'CONDUCTOR DESCONECTADO',functional:2,safety:1},{id:'L_INSUL',label:'AISLAMIENTO DETERIORADO',functional:0,safety:1},{id:'L_EXPOSED',label:'CONDUCTOR EXPUESTO',functional:0,safety:1},{id:'L_SPLICE',label:'EMPALME EXPUESTO',functional:0,safety:1},{id:'L_HEAT',label:'SIGNOS VISIBLES DE RECALENTAMIENTO',functional:1,safety:1},{id:'L_ARC',label:'SIGNOS VISIBLES DE ARCO ELÉCTRICO',functional:1,safety:2},{id:'L_FIX_LOOSE',label:'HOLGURA EN LA FIJACIÓN DE LA LUMINARIA',functional:0,safety:1},{id:'L_PART_DETACH',label:'LUMINARIA PARCIALMENTE DESPRENDIDA',functional:0,safety:2},{id:'L_FALL_RISK',label:'RIESGO DE DESPRENDIMIENTO DE LA LUMINARIA',functional:0,safety:2},{id:'L_MISALIGN',label:'LUMINARIA DESALINEADA RESPECTO AL BRAZO O SOPORTE',functional:0,safety:0}];
+const LUM_FINDINGS_LED=[{id:'LED_SECTIONS',label:'UNO O MÁS SECTORES DEL MÓDULO LED SIN EMISIÓN DE LUZ',functional:1,safety:0},{id:'LED_DAMAGE',label:'DAÑO FÍSICO VISIBLE EN MÓDULO LED',functional:1,safety:1},{id:'LED_LOOSE',label:'MÓDULO LED DESPRENDIDO',functional:1,safety:1},{id:'LED_ABSENT',label:'MÓDULO LED AUSENTE',functional:2,safety:0},{id:'DRV_HEAT',label:'DRIVER CON SIGNOS VISIBLES DE RECALENTAMIENTO',functional:1,safety:1},{id:'DRV_CONN_EXPOSED',label:'CONEXIONES DEL DRIVER EXPUESTAS',functional:0,safety:1},{id:'DRV_DAMAGE',label:'DAÑO FÍSICO VISIBLE EN DRIVER',functional:1,safety:1}];
+const LUM_FINDINGS_CONVENTIONAL=[{id:'SRC_BROKEN',label:'FUENTE LUMINOSA ROTA',functional:2,safety:0},{id:'SRC_ABSENT',label:'FUENTE LUMINOSA AUSENTE',functional:2,safety:0},{id:'SRC_BLACK',label:'BULBO O TUBO CON ENNEGRECIMIENTO VISIBLE',functional:1,safety:0},{id:'BAL_HEAT',label:'BALASTO CON SIGNOS VISIBLES DE RECALENTAMIENTO',functional:1,safety:1},{id:'BAL_CONN_EXPOSED',label:'CONEXIONES DEL BALASTO EXPUESTAS',functional:0,safety:1},{id:'IGN_ABSENT',label:'ARRANCADOR O IGNITOR AUSENTE',functional:2,safety:0}];
+const LUM_FINDINGS_PHOTOCELL=[{id:'PC_ABSENT',label:'FOTOCELDA AUSENTE',functional:1,safety:0},{id:'PC_CRACK',label:'FOTOCELDA FISURADA',functional:1,safety:0},{id:'PC_BROKEN',label:'FOTOCELDA ROTA',functional:1,safety:0},{id:'PC_DETACH',label:'FOTOCELDA DESPRENDIDA',functional:1,safety:1},{id:'PC_BAD_FIX',label:'FOTOCELDA MAL FIJADA',functional:0,safety:1},{id:'PC_CONN_EXPOSED',label:'CONEXIÓN DE FOTOCELDA EXPUESTA',functional:0,safety:1}];
+const LUM_FINDINGS_SOLAR=[{id:'PV_CRACK',label:'PANEL FOTOVOLTAICO FISURADO',functional:1,safety:0},{id:'PV_BROKEN',label:'PANEL FOTOVOLTAICO ROTO',functional:2,safety:1},{id:'PV_DETACH',label:'PANEL FOTOVOLTAICO PARCIALMENTE DESPRENDIDO',functional:1,safety:2},{id:'PV_BAD_FIX',label:'FIJACIÓN DEFICIENTE DEL PANEL FOTOVOLTAICO',functional:0,safety:1},{id:'PV_CONN_EXPOSED',label:'CONEXIONES DEL PANEL FOTOVOLTAICO EXPUESTAS',functional:0,safety:1},{id:'PV_DIRTY',label:'SUPERFICIE DEL PANEL CON SUCIEDAD U OBSTRUCCIÓN VISIBLE',functional:1,safety:0},{id:'BAT_ABSENT',label:'BATERÍA AUSENTE',functional:2,safety:0},{id:'BAT_LEAK',label:'FUGA VISIBLE EN BATERÍA',functional:1,safety:2},{id:'BAT_TERM',label:'TERMINALES DE BATERÍA DETERIORADOS',functional:1,safety:1},{id:'CTL_DAMAGE',label:'CONTROLADOR DE CARGA CON DAÑO FÍSICO VISIBLE',functional:1,safety:1},{id:'CTL_HEAT',label:'CONTROLADOR DE CARGA CON SIGNOS VISIBLES DE RECALENTAMIENTO',functional:1,safety:1}];
+function upper(v){return String(v??'').trim().toLocaleUpperCase('es-CO')}
+function uid(prefix='ID'){return `${prefix}-${Date.now().toString(36).toUpperCase()}-${crypto.getRandomValues(new Uint32Array(1))[0].toString(36).toUpperCase()}`}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),2600)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function xml(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c]))}
+function nowIso(){return new Date().toISOString()}
+function fmtDate(v){try{return new Date(v).toLocaleString('es-CO')}catch{return v||''}}
+
+function openDb(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=e=>{const d=e.target.result;['orders','structures','luminaires','settings','sync'].forEach(n=>{if(!d.objectStoreNames.contains(n))d.createObjectStore(n,{keyPath:'id'})})};r.onsuccess=e=>{db=e.target.result;resolve(db)};r.onerror=()=>reject(r.error)})}
+function store(name,mode='readonly'){return db.transaction(name,mode).objectStore(name)}
+function all(name){return new Promise((res,rej)=>{const r=store(name).getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)})}
+function get(name,id){return new Promise((res,rej)=>{const r=store(name).get(id);r.onsuccess=()=>res(r.result||null);r.onerror=()=>rej(r.error)})}
+function put(name,obj){return new Promise((res,rej)=>{const r=store(name,'readwrite').put(obj);r.onsuccess=()=>res(obj);r.onerror=()=>rej(r.error)})}
+function del(name,id){return new Promise((res,rej)=>{const r=store(name,'readwrite').delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+
+async function getSettings(){return (await get('settings','main'))||{id:'main',crew:'',email:'',name:''}}
+async function saveSettingsPatch(patch){const cur=await getSettings();const next={...cur,...patch,id:'main'};await put('settings',next);return next}
+function userByEmail(email){const e=String(email||'').trim().toLowerCase();return AUTHORIZED_USERS.find(u=>u.email===e)||null}
+async function ensureUserSession(){const st=await getSettings();const u=userByEmail(st.email);if(u){if(st.name!==u.name||st.crew!==u.crew)await saveSettingsPatch({name:u.name,crew:u.crew||''});return true}$('loginEmail').value='';$('loginMatched').classList.add('hidden');$('loginModal').classList.add('open');setTimeout(()=>$('loginEmail').focus(),150);return false}
+async function refreshHeader(){const st=await getSettings();$('crewLabel').textContent=st.name||'Usuario no identificado';const parts=[];if(st.email)parts.push(st.email.toUpperCase());if(st.crew)parts.push(upper(st.crew));$('userLabel').textContent=parts.join(' · ')||'Trabajo local sin conexión'}
+async function dashboard(){const [orders,structures,lums,syncs]=await Promise.all([all('orders'),all('structures'),all('luminaires'),all('sync')]);$('kOrders').textContent=orders.length;$('kStructures').textContent=structures.length;$('kLums').textContent=lums.length;$('kPending').textContent=syncs.filter(x=>x.status!=='synced').length;await refreshHeader();updateNet()}
+function updateNet(){const on=navigator.onLine;$('netBadge').textContent=on?'● Con conexión':'● Offline listo';$('netBadge').style.background=on?'#0c8750':'#52657d'}
+window.addEventListener('online',updateNet);window.addEventListener('offline',updateNet);
+
+function show(name){qsa('.screen').forEach(x=>x.classList.remove('active'));const map={home:'screenHome',orders:'screenOrders',structure:'screenStructure',detail:'screenStructureDetail',summary:'screenSummary',export:'screenExport',sync:'screenSync'};$(map[name]).classList.add('active');qsa('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.go===name||(name==='structure'||name==='detail'||name==='summary')&&b.dataset.go==='orders'));window.scrollTo({top:0,behavior:'instant'});if(name==='home')dashboard();if(name==='orders')renderOrders();if(name==='export'){}if(name==='sync')renderSyncInfo()}
+qsa('[data-go]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.go)));
+
+function detectDelimiter(line){const ds=['\t',';','|',','];return ds.map(d=>[d,(line.split(d).length-1)]).sort((a,b)=>b[1]-a[1])[0][0]}
+function norm(s){return String(s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'')}
+function findCol(headers,aliases){const n=headers.map(norm);for(const a of aliases){const i=n.indexOf(norm(a));if(i>=0)return i}return -1}
+async function importText(text){const lines=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(x=>x.trim());if(!lines.length)throw new Error('Archivo vacío');const d=detectDelimiter(lines[0]);const rows=lines.map(l=>l.split(d).map(x=>x.trim().replace(/^"|"$/g,'')));let headers=rows[0];let oi=findCol(headers,['orden','ro','ot','ordenservicio','numeroorden']),ci=findCol(headers,['cuadrilla','equipo','brigada']),qi=findCol(headers,['cantidad','cantidadluminarias','luminarias','meta','asignadas']),mi=findCol(headers,['municipio','zona','sector','ubicacion']);let start=1;if(oi<0){oi=0;ci=1;qi=2;mi=3;start=0}
+  let added=0,updated=0;for(let r=start;r<rows.length;r++){const row=rows[r],order=(row[oi]||'').replace(/\D+/g,'');if(!order)continue;const id='ORD-'+order;const prev=await get('orders',id);const obj={id,order,crew:row[ci]||prev?.crew||'',target:Math.max(1,parseInt(row[qi]||prev?.target||10)||10),location:row[mi]||prev?.location||'',createdAt:prev?.createdAt||nowIso(),updatedAt:nowIso()};await put('orders',obj);prev?updated++:added++}return {added,updated}}
+async function fileImport(file){const text=await file.text();const r=await importText(text);toast(`TXT cargado: ${r.added} nuevas, ${r.updated} actualizadas`);await dashboard();show('orders')}
+$('btnImport').onclick=()=>$('txtInput').click();$('btnImport2').onclick=()=>$('txtInput').click();$('txtInput').addEventListener('change',e=>{const f=e.target.files?.[0];if(f)fileImport(f).catch(err=>toast(err.message));e.target.value=''})
+$('btnInventory').onclick=async()=>{const o=await all('orders');if(!o.length){toast('Primero carga el TXT de órdenes');return}show('orders')};$('btnRecords').onclick=()=>show('orders');$('btnExport').onclick=()=>show('export');$('btnSync').onclick=()=>show('sync');
+
+async function orderStats(orderId){const [ss,ll]=await Promise.all([all('structures'),all('luminaires')]);const s=ss.filter(x=>x.orderId===orderId),ids=new Set(s.map(x=>x.id)),l=ll.filter(x=>ids.has(x.structureId));return {structures:s,luminaires:l}}
+async function touchOrder(id){const o=await get('orders',id);if(o){o.updatedAt=nowIso();await put('orders',o)}}
+async function orderStatus(order){const s=await orderStats(order.id),n=s.luminaires.length;return n>=order.target?'done':n>0?'progress':'pending'}
+async function renderOrders(){const orders=(await all('orders')).sort((a,b)=>String(a.order).localeCompare(String(b.order)));const list=$('ordersList'),query=upper($('orderSearch')?.value||'');list.innerHTML='';let shown=0;for(const o of orders){const st=await orderStats(o.id),n=st.luminaires.length,status=n>=o.target?'done':n>0?'progress':'pending';if(orderFilter!=='all'&&status!==orderFilter)continue;const cds=[...new Set(st.structures.map(s=>s.cd).filter(Boolean))];const hay=upper([o.order,o.location,...cds].join(' '));if(query&&!hay.includes(query))continue;shown++;const pct=Math.min(100,Math.round(n/o.target*100));const div=document.createElement('div');div.className='order-card '+(status==='done'?'done-card':'');div.innerHTML=`<div class="order-head"><div class="order-num">${esc(o.order)}</div><span class="badge ${status}">${status==='done'?'Inventario completo':status==='progress'?'En proceso':'Pendiente'}</span></div><div class="order-meta">${cds.length?'CD: '+esc(cds.join(', ')):'CD por registrar'}${o.location?' · '+esc(o.location):''}</div><div class="progressbar"><i style="width:${pct}%"></i></div><div class="order-stats"><span>⚡ ${st.structures.length} estructura${st.structures.length===1?'':'s'}</span><span>💡 ${n}/${o.target} luminarias</span></div><div class="order-actions"><button class="secondary-btn" data-inventory="${o.id}">${n?'Ver / continuar inventario':'Iniciar inventario'}</button><button class="primary-btn" data-summary="${o.id}" ${n?'':'disabled'}>Ver resumen</button></div>`;list.appendChild(div)}qsa('[data-inventory]').forEach(b=>b.onclick=e=>{e.stopPropagation();openOrder(b.dataset.inventory)});qsa('[data-summary]').forEach(b=>b.onclick=async e=>{e.stopPropagation();if(b.disabled)return;activeStructureId=null;await renderSummary(b.dataset.summary);show('summary')});if(!shown)list.innerHTML='<div class="card"><div class="muted">No hay órdenes que coincidan con este filtro o búsqueda.</div></div>'}
+qsa('.tab').forEach(b=>b.onclick=()=>{qsa('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');orderFilter=b.dataset.filter;renderOrders()});$('orderSearch').oninput=()=>renderOrders();
+async function openOrder(id){activeOrderId=id;const {structures}=await orderStats(id);if(structures.length){activeStructureId=structures[structures.length-1].id;await renderStructureDetail();show('detail')}else{resetStructure();await renderStructureForm();show('structure')}}
+
+function setClass(v){stClass=v;qsa('#classSeg button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));fillChars();$('btNetworkWrap').style.opacity=v==='BT'?'1':'.7';if(v!=='BT'&&!$('stNetwork').value)$('stNetwork').value='NO APLICA'}
+qsa('#classSeg button').forEach(b=>b.onclick=()=>setClass(b.dataset.v));$('stMaterial').onchange=fillChars;
+function fillChars(){const key=`${stClass}|${$('stMaterial').value}`,opts=FEATURES[key]||[];$('stChar').innerHTML='<option value="">Selecciona…</option>'+opts.map(x=>`<option>${x}</option>`).join('')+'<option>OTRA / NO IDENTIFICADA</option>';buildStructureFindings()}
+let stNovelty='NO',lmNovelty='NO';
+function currentStructureFindingCatalog(){const material=upper($('stMaterial').value);return [...STRUCTURE_FINDINGS_COMMON,...(STRUCTURE_FINDINGS_BY_MATERIAL[material]||[])]}
+function buildStructureFindings(){const box=$('stFindings'),catalog=currentStructureFindingCatalog(),previous=new Set(qsa('#stFindings input:checked').map(x=>x.value));box.innerHTML=catalog.map(f=>`<label class="finding-item"><input type="checkbox" value="${f.id}" ${previous.has(f.id)?'checked':''}><span>${esc(f.label)}</span></label>`).join('');qsa('#stFindings input').forEach(ch=>ch.addEventListener('change',updateStructureCalculatedState));updateStructureCalculatedState()}
+function selectedStructureFindingObjects(){const ids=new Set(qsa('#stFindings input:checked').map(x=>x.value));return currentStructureFindingCatalog().filter(f=>ids.has(f.id))}
+function calculateSecurity(fs){const sev=fs.length?Math.max(...fs.map(f=>f.safety||0)):0;return sev>=2?'RIESGO CRÍTICO':sev===1?'REQUIERE ATENCIÓN':'SIN CONDICIÓN CRÍTICA'}
+function calculateStructureState(fs){if(stNovelty==='NO')return 'SIN NOVEDAD';const sev=fs.length?Math.max(...fs.map(f=>f.technical||0)):0;return sev>=2?'CRÍTICA':'CON NOVEDAD'}
+function updateStructureCalculatedState(){const fs=selectedStructureFindingObjects(),state=calculateStructureState(fs),sec=calculateSecurity(fs);$('stCalculatedState').textContent=state;$('stCalculatedState').className='state-readonly '+(state==='CRÍTICA'?'state-bad':state==='CON NOVEDAD'?'state-warn':'state-ok');$('stSecurityState').textContent=sec;$('stSecurityState').className='state-readonly '+(sec==='RIESGO CRÍTICO'?'state-bad':sec==='REQUIERE ATENCIÓN'?'state-warn':'state-ok');$('stFindingsSummary').textContent=fs.length?`${fs.length} seleccionada${fs.length===1?'':'s'}`:'Seleccionar novedades'}
+function setStructureNovelty(v){stNovelty=v;qsa('#stNoveltySeg button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));$('stFindingsWrap').classList.toggle('hidden',v!=='SI');if(v==='NO')qsa('#stFindings input').forEach(x=>x.checked=false);updateStructureCalculatedState()}
+qsa('#stNoveltySeg button').forEach(b=>b.addEventListener('click',()=>setStructureNovelty(b.dataset.v)));
+function resetStructure(){activeStructureId=null;selectedPhotos=[];$('stCd').value='';$('stNode').value='';$('stMaterial').value='';$('stChar').innerHTML='<option value="">Selecciona tipo y material…</option>';$('stNetwork').value='';$('stArmLength').value='';$('stLat').value='';$('stLon').value='';$('stAcc').value='';$('stObs').value='';setClass('BT');stNovelty='NO';buildStructureFindings();setStructureNovelty('NO');renderPhotos()}
+$('backFromStructure').onclick=()=>show('orders');
+$('btnGps').onclick=()=>{if(!navigator.geolocation){toast('GPS no disponible');return}toast('Obteniendo coordenadas con precisión ≤ 12 m…');navigator.geolocation.getCurrentPosition(p=>{const acc=Number(p.coords.accuracy||999);if(acc>12){$('stLat').value='';$('stLon').value='';$('stAcc').value=acc.toFixed(1);toast(`Precisión GPS ${acc.toFixed(1)} m. Debe ser máximo 12 m. Ajusta o repite la captura.`);return}$('stLat').value=p.coords.latitude.toFixed(6);$('stLon').value=p.coords.longitude.toFixed(6);$('stAcc').value=acc.toFixed(1);toast('Coordenadas aceptadas')},e=>toast('No fue posible obtener GPS: '+e.message),{enableHighAccuracy:true,timeout:20000,maximumAge:0})};
+async function compressImage(file,maxW=1280,quality=.76){return new Promise(res=>{const img=new Image(),fr=new FileReader();fr.onload=()=>{img.onload=()=>{let w=img.width,h=img.height;if(w>maxW){h=Math.round(h*maxW/w);w=maxW}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res({name:file.name||'foto.jpg',type:'image/jpeg',dataURL:c.toDataURL('image/jpeg',quality)})};img.onerror=()=>res(null);img.src=fr.result};fr.onerror=()=>res(null);fr.readAsDataURL(file)})}
+$('stPhotos').onchange=async e=>{const files=[...e.target.files];if(selectedPhotos.length+files.length>10){toast('Máximo 10 fotos por estructura');e.target.value='';return}for(const f of files){const p=await compressImage(f);if(p)selectedPhotos.push(p)}renderPhotos();e.target.value=''};
+function renderPhotos(){const maxed=selectedPhotos.length>=10;$('photoCount').textContent=`${selectedPhotos.length} / 10 · mínimo 5`;$('photoGrid').innerHTML=selectedPhotos.map((p,i)=>`<div class="photo" data-i="${i}"><img src="${p.dataURL}" alt="Foto ${i+1}"></div>`).join('')+`<label class="photo add ${maxed?'disabled':''}" for="stPhotos">📁<br>${maxed?'Máximo alcanzado':'Cargar fotos'}</label>`}
+$('btnSaveStructure').onclick=async()=>{const o=await get('orders',activeOrderId);if(!o)return;const cd=upper($('stCd').value),node=upper($('stNode').value),material=upper($('stMaterial').value),char=upper($('stChar').value),network=upper($('stNetwork').value),arm=$('stArmLength').value.trim(),lat=$('stLat').value,lon=$('stLon').value,acc=Number($('stAcc').value),fs=selectedStructureFindingObjects(),finalState=calculateStructureState(fs),securityCondition=calculateSecurity(fs);if(!cd||!node||!material||!char||!network||!arm){toast('Completa todos los campos de la estructura');return}if(!lat||!lon||!Number.isFinite(acc)||acc>12){toast('Captura coordenadas con precisión máxima de 12 m');return}if(stNovelty==='SI'&&!fs.length){toast('Selecciona al menos una novedad de la estructura');return}if(selectedPhotos.length<5||selectedPhotos.length>10){toast('Carga entre 5 y 10 fotografías de la estructura');return}const ss=await all('structures');if(ss.some(x=>x.orderId===activeOrderId&&x.cd===cd&&x.node===node)){toast('Esta estructura ya existe dentro de la orden');return}const id=uid('EST');const obj={id,orderId:activeOrderId,order:upper(o.order),cd,node,class:upper(stClass),material,characteristics:char,network,armLength:arm,lat,lon,accuracy:acc.toFixed(1),hasNovelty:stNovelty==='SI',findings:fs.map(f=>upper(f.label)),finalState,securityCondition,photos:selectedPhotos,observation:upper($('stObs').value),createdAt:nowIso(),updatedAt:nowIso(),syncStatus:'pending'};await put('structures',obj);await touchOrder(activeOrderId);activeStructureId=id;selectedPhotos=[];await renderStructureDetail();await dashboard();show('detail');toast('Estructura guardada')};
+
+
+async function renderStructureDetail(){const s=await get('structures',activeStructureId);if(!s)return;const lums=(await all('luminaires')).filter(x=>x.structureId===s.id);const sState=s.finalState||(structureBad(s)?'CON NOVEDAD':'SIN NOVEDAD'),sSec=s.securityCondition||'SIN CONDICIÓN CRÍTICA';$('structureSummary').innerHTML=`<div class="section-title"><span class="dot"></span>Estructura</div><b>${esc(s.cd)} · ${esc(s.node)}</b><div class="order-meta">Orden ${esc(s.order)} · ${esc(s.class)} · ${esc(s.material)} · ${esc(s.characteristics)}${s.network?' · Red '+esc(s.network):''}</div><div class="order-meta">📍 ${esc(s.lat)}, ${esc(s.lon)} · precisión ${esc(s.accuracy)} m · ${s.photos?.length||0} foto(s)</div><div class="notice ${sState==='SIN NOVEDAD'?'green':'amber'} mt8"><b>Estado estructura:</b> ${esc(sState)} · <b>Seguridad:</b> ${esc(sSec)}</div>${s.findings?.length?`<div class="notice amber mt8">${esc(s.findings.join(' · '))}</div>`:''}`;$('lumCount').textContent=`(${lums.length})`;$('lumList').innerHTML=lums.length?lums.map((l,i)=>`<div class="lum-card"><div class="lum-head"><b>Luminaria ${i+1}</b><span class="chip ${String(l.technology).toLowerCase()==='led'?'led':String(l.technology).includes('SODIO')?'sodio':''}">${esc(l.technology)}</span><button class="tiny-btn" data-del-lum="${l.id}">Eliminar</button></div><div class="lum-grid"><span>Rótulo: <b>${esc(l.serial)}</b></span><span>Potencia: <b>${esc(l.power)} W</b></span><span>Alimentación: <b>${esc(l.supply)}</b></span><span>Control: <b>${esc(l.control)}</b></span><span>Estado funcional: <b>${esc(l.finalState||'OPERATIVA')}</b></span><span>Seguridad: <b>${esc(l.securityCondition||'SIN CONDICIÓN CRÍTICA')}</b></span></div>${l.findings?.length?`<div class="notice amber mt8">${esc(l.findings.join(' · '))}</div>`:''}</div>`).join(''):'<div class="muted small">Aún no hay luminarias en esta estructura.</div>';qsa('[data-del-lum]').forEach(b=>b.onclick=async()=>{await del('luminaires',b.dataset.delLum);await touchOrder(s.orderId);await renderStructureDetail();await dashboard();toast('Luminaria eliminada')})}
+$('backFromDetail').onclick=()=>show('orders');
+function currentLumFindingCatalog(){const tech=upper($('lmTech').value),supply=upper($('lmSupply').value),control=upper($('lmControl').value);let out=[...LUM_FINDINGS_COMMON];if(tech==='LED')out.push(...LUM_FINDINGS_LED);else if(tech&&tech!=='OTRA / NO IDENTIFICADA'&&tech!=='INDUCCIÓN ELECTROMAGNÉTICA')out.push(...LUM_FINDINGS_CONVENTIONAL);if(control==='FOTOCELDA')out.push(...LUM_FINDINGS_PHOTOCELL);if(supply==='FOTOVOLTAICA'||supply==='HÍBRIDA')out.push(...LUM_FINDINGS_SOLAR);return out}
+function buildLumFindings(){const box=$('lumFindings'),catalog=currentLumFindingCatalog(),previous=new Set(qsa('#lumFindings input:checked').map(x=>x.value));box.innerHTML=catalog.map(f=>`<label class="finding-item"><input type="checkbox" value="${f.id}" ${previous.has(f.id)?'checked':''}><span>${esc(f.label)}</span></label>`).join('');qsa('#lumFindings input').forEach(ch=>ch.addEventListener('change',updateLumCalculatedState));updateLumCalculatedState()}
+function selectedFindingObjects(){const ids=new Set(qsa('#lumFindings input:checked').map(x=>x.value));return currentLumFindingCatalog().filter(f=>ids.has(f.id))}
+function calculateLumState(fs){if(lmNovelty==='NO')return 'OPERATIVA';const sev=fs.length?Math.max(...fs.map(f=>f.functional||0)):0;return sev>=2?'FUERA DE SERVICIO':sev>=1?'OPERATIVA CON NOVEDAD':'OPERATIVA'}
+function calculateLumSecurity(fs){return calculateSecurity(fs)}
+function updateLumCalculatedState(){const fs=selectedFindingObjects(),state=calculateLumState(fs),sec=calculateLumSecurity(fs),el=$('lumCalculatedState'),se=$('lumSecurityState');el.textContent=state;el.className='state-readonly '+(state==='FUERA DE SERVICIO'?'state-bad':state==='OPERATIVA CON NOVEDAD'?'state-warn':'state-ok');se.textContent=sec;se.className='state-readonly '+(sec==='RIESGO CRÍTICO'?'state-bad':sec==='REQUIERE ATENCIÓN'?'state-warn':'state-ok');$('lmFindingsSummary').textContent=fs.length?`${fs.length} seleccionada${fs.length===1?'':'s'}`:'Seleccionar novedades'}
+function setLumNovelty(v){lmNovelty=v;qsa('#lmNoveltySeg button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));$('lmFindingsWrap').classList.toggle('hidden',v!=='SI');if(v==='NO')qsa('#lumFindings input').forEach(x=>x.checked=false);updateLumCalculatedState()}
+qsa('#lmNoveltySeg button').forEach(b=>b.addEventListener('click',()=>setLumNovelty(b.dataset.v)));
+['lmTech','lmSupply','lmControl'].forEach(id=>$(id).addEventListener('change',buildLumFindings));
+function renderLumPhotos(){const maxed=selectedLumPhotos.length>=10;$('lumPhotoCount').textContent=`${selectedLumPhotos.length} / 10 · mínimo 5`;$('lumPhotoGrid').innerHTML=selectedLumPhotos.map((p,i)=>`<div class="photo"><img src="${p.dataURL}" alt="Foto ${i+1}"></div>`).join('')+`<label class="photo add ${maxed?'disabled':''}" for="lmPhotos">📁<br>${maxed?'Máximo alcanzado':'Cargar fotos'}</label>`}
+$('lmPhotos').onchange=async e=>{const files=[...e.target.files];if(selectedLumPhotos.length+files.length>10){toast('Máximo 10 fotos por luminaria');e.target.value='';return}for(const f of files){const p=await compressImage(f);if(p)selectedLumPhotos.push(p)}renderLumPhotos();e.target.value=''};
+$('btnAddLum').onclick=()=>{$('lmSerial').value='';$('lmTech').value='';$('lmType').value='';$('lmPower').value='';$('lmSupply').value='';$('lmControl').value='';$('lmClass').value='';$('lmObservation').value='';selectedLumPhotos=[];lmNovelty='NO';buildLumFindings();setLumNovelty('NO');renderLumPhotos();$('lumModal').classList.add('open')};
+qsa('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).classList.remove('open'));
+$('btnSaveLum').onclick=async()=>{const s=await get('structures',activeStructureId);if(!s)return;const serial=upper($('lmSerial').value),tech=upper($('lmTech').value),type=upper($('lmType').value),power=$('lmPower').value.trim(),supply=upper($('lmSupply').value),control=upper($('lmControl').value),classification=upper($('lmClass').value),fs=selectedFindingObjects(),finalState=calculateLumState(fs),securityCondition=calculateLumSecurity(fs);if(!serial||!tech||!type||!power||!supply||!control||!classification){toast('Completa todos los campos de la luminaria');return}if(lmNovelty==='SI'&&!fs.length){toast('Selecciona al menos una novedad de la luminaria');return}if(selectedLumPhotos.length<5||selectedLumPhotos.length>10){toast('Carga entre 5 y 10 fotografías de la luminaria');return}const l={id:uid('LUM'),structureId:s.id,orderId:s.orderId,order:s.order,cd:s.cd,node:s.node,serial,technology:tech,type,power,supply,control,classification,hasNovelty:lmNovelty==='SI',findings:fs.map(f=>upper(f.label)),finalState,securityCondition,photos:selectedLumPhotos,observation:upper($('lmObservation').value),createdAt:nowIso(),updatedAt:nowIso(),syncStatus:'pending'};await put('luminaires',l);await touchOrder(s.orderId);selectedLumPhotos=[];$('lumModal').classList.remove('open');await renderStructureDetail();await dashboard();const o=await get('orders',s.orderId),st=await orderStats(s.orderId);toast(st.luminaires.length>=o.target?`Orden ${o.order}: inventario ${st.luminaires.length}/${o.target}`:'Luminaria guardada')};
+$('btnNewStructureSameOrder').onclick=async()=>{resetStructure();await renderStructureForm();show('structure')};$('btnGoOrderSummary').onclick=async()=>{await renderSummary(activeOrderId);show('summary')};
+
+function structureBad(s){if(s.finalState)return s.finalState!=='SIN NOVEDAD';return Object.values(s.technical||{}).some(v=>v===false)}
+function groupCount(arr,keyFn){const m=new Map;arr.forEach(x=>{const k=keyFn(x);m.set(k,(m.get(k)||0)+1)});return [...m.entries()].sort((a,b)=>b[1]-a[1])}
+async function makeSummary(orderId){const o=await get('orders',orderId),st=await orderStats(orderId),ss=st.structures,ll=st.luminaires,cds=[...new Set(ss.map(s=>s.cd).filter(Boolean))];const tech=groupCount(ll,l=>`${l.technology} ${l.power} W`).map(([k,n])=>`${n} ${k}`).join(', ');const states=groupCount(ll,l=>l.finalState||'SIN CLASIFICAR').map(([k,n])=>`${n} ${k}`).join(', ');const bad=ss.filter(structureBad).length;const lumNov=ll.filter(l=>(l.finalState||'')!=='OPERATIVA').length;const criticalStruct=ss.filter(s=>(s.securityCondition||'')==='RIESGO CRÍTICO').length;const criticalLum=ll.filter(l=>(l.securityCondition||'')==='RIESGO CRÍTICO').length;let p=`SE REALIZA INVENTARIO DE ALUMBRADO PÚBLICO CORRESPONDIENTE A LA ORDEN ${o.order}, REGISTRANDO ${ll.length} LUMINARIA${ll.length===1?'':'S'} EN ${ss.length} ESTRUCTURA${ss.length===1?'':'S'}`;if(cds.length)p+=` ASOCIADA${ss.length===1?'':'S'} ${cds.length===1?'AL CD':'A LOS CD'} ${cds.join(', ')}`;p+='.';if(tech)p+=` SE IDENTIFICAN ${tech}.`;if(states)p+=` ESTADO FUNCIONAL DE LUMINARIAS: ${states}.`;if(bad||lumNov)p+=` SE REGISTRAN ${bad} ESTRUCTURA${bad===1?'':'S'} CON NOVEDAD TÉCNICA Y ${lumNov} LUMINARIA${lumNov===1?'':'S'} CON NOVEDAD O FUERA DE SERVICIO.`;else if(ll.length)p+=' NO SE REGISTRAN NOVEDADES TÉCNICAS RELEVANTES EN LOS CAMPOS DILIGENCIADOS.';if(criticalStruct||criticalLum)p+=` SE IDENTIFICAN ${criticalStruct} ESTRUCTURA${criticalStruct===1?'':'S'} Y ${criticalLum} LUMINARIA${criticalLum===1?'':'S'} CON CONDICIÓN DE SEGURIDAD CLASIFICADA COMO RIESGO CRÍTICO.`;if(ss.length||ll.length)p+=' SE TOMA REGISTRO FOTOGRÁFICO DE ESTRUCTURAS Y ELEMENTOS AP.';return upper(p)}
+async function renderSummary(orderId){activeOrderId=orderId;const o=await get('orders',orderId),st=await orderStats(orderId),ss=st.structures,ll=st.luminaires,photos=ss.reduce((n,s)=>n+(s.photos?.length||0),0)+ll.reduce((n,l)=>n+(l.photos?.length||0),0),geo=ss.filter(s=>s.lat&&s.lon).length,pct=ss.length?Math.round(geo/ss.length*100):0,done=ll.length>=o.target;$('summaryStatus').innerHTML=`<div class="notice ${done?'green':'amber'}"><b>${done?'Inventario completo':'Inventario en avance'} · ${esc(o.order)}</b><br>${ll.length}/${o.target} luminarias · ${ss.length} estructuras</div>`;$('summaryKpis').innerHTML=`<div class="kpi"><div class="ico">⚡</div><div><div class="n">${ss.length}</div><div class="l">Estructuras</div></div></div><div class="kpi green"><div class="ico">💡</div><div><div class="n">${ll.length}</div><div class="l">Luminarias</div></div></div><div class="kpi"><div class="ico">📷</div><div><div class="n">${photos}</div><div class="l">Fotografías</div></div></div><div class="kpi"><div class="ico">⌖</div><div><div class="n">${pct}%</div><div class="l">Georreferenciadas</div></div></div>`;$('summaryText').textContent=await makeSummary(orderId)}
+$('backFromSummary').onclick=async()=>{if(activeStructureId){await renderStructureDetail();show('detail')}else show('orders')};$('btnCopySummary').onclick=async()=>{await navigator.clipboard.writeText($('summaryText').textContent);toast('Resumen copiado')};
+
+function download(name,data,type='application/octet-stream'){const blob=data instanceof Blob?data:new Blob([data],{type});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},800)}
+function csvEscape(v){const s=String(v??'');return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
+function encodeUtf8(s){return new TextEncoder().encode(s)}
+const CRC_TABLE=(()=>{let t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?0xedb88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(u8){let c=0xffffffff;for(const b of u8)c=CRC_TABLE[(c^b)&255]^(c>>>8);return (c^0xffffffff)>>>0}
+function u16(n){return [n&255,(n>>>8)&255]}function u32(n){return [n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]}
+function zipStore(files){let locals=[],centrals=[],offset=0;for(const f of files){const name=encodeUtf8(f.name),data=f.data instanceof Uint8Array?f.data:encodeUtf8(f.data),crc=crc32(data),lh=new Uint8Array([...u32(0x04034b50),...u16(20),...u16(0),...u16(0),...u16(0),...u16(0),...u32(crc),...u32(data.length),...u32(data.length),...u16(name.length),...u16(0),...name]);locals.push(lh,data);const ch=new Uint8Array([...u32(0x02014b50),...u16(20),...u16(20),...u16(0),...u16(0),...u16(0),...u16(0),...u32(crc),...u32(data.length),...u32(data.length),...u16(name.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(offset),...name]);centrals.push(ch);offset+=lh.length+data.length}const cdSize=centrals.reduce((n,x)=>n+x.length,0),end=new Uint8Array([...u32(0x06054b50),...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(cdSize),...u32(offset),...u16(0)]);return new Blob([...locals,...centrals,end],{type:'application/zip'})}
+function cellXml(v){if(v===null||v===undefined||v==='')return '<c/>';if(typeof v==='number'||(/^[-+]?\d+(\.\d+)?$/.test(String(v))&&String(v).length<16))return `<c t="n"><v>${v}</v></c>`;return `<c t="inlineStr"><is><t>${xml(v)}</t></is></c>`}
+function sheetXml(rows){return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${rows.map((r,i)=>`<row r="${i+1}">${r.map(cellXml).join('')}</row>`).join('')}</sheetData></worksheet>`}
+function xlsxBlob(sheets){const files=[];const overrides=sheets.map((s,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('');files.push({name:'[Content_Types].xml',data:`<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${overrides}</Types>`});files.push({name:'_rels/.rels',data:`<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`});files.push({name:'xl/workbook.xml',data:`<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets.map((s,i)=>`<sheet name="${xml(s.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`});files.push({name:'xl/_rels/workbook.xml.rels',data:`<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((s,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`});files.push({name:'xl/styles.xml',data:`<?xml version="1.0" encoding="UTF-8"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts><fills count="1"><fill><patternFill patternType="none"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="1"><xf xfId="0"/></cellXfs></styleSheet>`});sheets.forEach((s,i)=>files.push({name:`xl/worksheets/sheet${i+1}.xml`,data:sheetXml(s.rows)}));return zipStore(files)}
+async function excelData(orderId=null){const orders=(await all('orders')).filter(o=>!orderId||o.id===orderId),structures=(await all('structures')).filter(s=>!orderId||s.orderId===orderId),ids=new Set(structures.map(s=>s.id)),lums=(await all('luminaires')).filter(l=>ids.has(l.structureId));const summary=[['ORDEN','META_LUMINARIAS','ESTRUCTURAS','LUMINARIAS','UBICACION','ULTIMA_ACTIVIDAD']];for(const o of orders){const ss=structures.filter(s=>s.orderId===o.id),sid=new Set(ss.map(s=>s.id)),ll=lums.filter(l=>sid.has(l.structureId));summary.push([upper(o.order),o.target,ss.length,ll.length,upper(o.location||''),o.updatedAt||''])}const sr=[['ID_ESTRUCTURA','ORDEN','CD','NODO','CLASIFICACION','MATERIAL','CARACTERISTICAS','RED_BT','LONG_BRAZO_M','LATITUD','LONGITUD','PRECISION_M','PRESENTA_NOVEDADES','NOVEDADES_ESTRUCTURA','ESTADO_TECNICO_ESTRUCTURA','CONDICION_SEGURIDAD_ESTRUCTURA','FOTOS','OBSERVACIONES']];structures.forEach(s=>sr.push([s.id,upper(s.order),upper(s.cd),upper(s.node),upper(s.class),upper(s.material),upper(s.characteristics),upper(s.network),s.armLength,s.lat,s.lon,s.accuracy,s.hasNovelty?'SI':'NO',(s.findings||[]).join(' | '),upper(s.finalState||(structureBad(s)?'CON NOVEDAD':'SIN NOVEDAD')),upper(s.securityCondition||'SIN CONDICIÓN CRÍTICA'),s.photos?.length||0,upper(s.observation||'')]));const lr=[['ID_LUMINARIA','ORDEN','ID_ESTRUCTURA','CD','NODO','ROTULO_SERIAL','TECNOLOGIA','TIPO','POTENCIA_W','ALIMENTACION','SISTEMA_CONTROL','CLASIFICACION','PRESENTA_NOVEDADES','NOVEDADES_LUMINARIA','ESTADO_FUNCIONAL_LUMINARIA','CONDICION_SEGURIDAD_LUMINARIA','FOTOS','OBSERVACIONES']];lums.forEach(l=>lr.push([l.id,upper(l.order),l.structureId,upper(l.cd),upper(l.node),upper(l.serial),upper(l.technology),upper(l.type),l.power,upper(l.supply),upper(l.control),upper(l.classification),l.hasNovelty?'SI':'NO',(l.findings||[]).join(' | '),upper(l.finalState||'OPERATIVA'),upper(l.securityCondition||'SIN CONDICIÓN CRÍTICA'),l.photos?.length||0,upper(l.observation||'')]));return [{name:'RESUMEN',rows:summary},{name:'ESTRUCTURAS',rows:sr},{name:'LUMINARIAS',rows:lr}]}
+async function exportExcel(orderId=null){const o=orderId?await get('orders',orderId):null;download(`AP_Inventory_${o?'Orden_'+o.order:'General'}_${new Date().toISOString().slice(0,10)}.xlsx`,xlsxBlob(await excelData(orderId)),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+function kmlStyle(id,color){return `<Style id="${id}"><IconStyle><color>${color}</color><scale>1.1</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle><LabelStyle><scale>0.85</scale></LabelStyle></Style>`}
+async function exportKmz(orderId=null){const structures=(await all('structures')).filter(s=>!orderId||s.orderId===orderId),lums=await all('luminaires'),o=orderId?await get('orders',orderId):null;const placemarks=[];for(const s of structures){if(!(s.lat&&s.lon))continue;const ll=lums.filter(l=>l.structureId===s.id),types=groupCount(ll,l=>`${l.technology} ${l.power}W`).map(([k,n])=>`${n} × ${k}`).join('<br>'),bad=structureBad(s),style=bad?'bad':s.class==='MT'?'mt':s.class==='CD'?'cd':'bt',findings=ll.filter(l=>l.findings?.length).map(l=>`${l.serial}: ${l.findings.join(' / ')} · ${l.finalState} · ${l.securityCondition||'SIN CONDICIÓN CRÍTICA'}`).join('<br>');placemarks.push(`<Placemark><name>${xml(`${s.node} · 💡 ${ll.length}`)}</name><styleUrl>#${style}</styleUrl><description><![CDATA[<b>Orden:</b> ${esc(s.order)}<br><b>CD:</b> ${esc(s.cd)}<br><b>Clasificación:</b> ${esc(s.class)}<br><b>Material:</b> ${esc(s.material)}<br><b>Características:</b> ${esc(s.characteristics)}<br><b>Red BT:</b> ${esc(s.network)}<br><b>Luminarias:</b> ${ll.length}<br>${types||'Sin luminarias'}${findings?'<br><b>Hallazgos:</b><br>'+findings:''}]]></description><Point><coordinates>${s.lon},${s.lat},0</coordinates></Point></Placemark>`)}const kml=`<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>AP Inventory${o?' - Orden '+xml(o.order):''}</name>${kmlStyle('bt','ffff7b16')}${kmlStyle('mt','ffb35c14')}${kmlStyle('cd','ff1bb1e7')}${kmlStyle('bad','ff2020d9')}${placemarks.join('')}</Document></kml>`;download(`AP_Inventory_${o?'Orden_'+o.order:'General'}.kmz`,zipStore([{name:'doc.kml',data:kml}]),'application/vnd.google-earth.kmz')}
+async function technicalPackage(orderId=null){const settings=await getSettings(),orders=(await all('orders')).filter(o=>!orderId||o.id===orderId),structures=(await all('structures')).filter(s=>!orderId||s.orderId===orderId),ids=new Set(structures.map(s=>s.id)),luminaires=(await all('luminaires')).filter(l=>ids.has(l.structureId));return {schema:'ap-inventory-1.2',exportId:uid('SYNC'),generatedAt:nowIso(),crew:settings,orders,structures:structures.map(({photos,...x})=>({...x,photoCount:photos?.length||0})),luminaires:luminaires.map(({photos,...x})=>({...x,photoCount:photos?.length||0}))}}
+
+async function exportOrderZip(orderId){const o=await get('orders',orderId);if(!o)return;const date=(new Date().toISOString().slice(0,10)).replace(/-/g,'');const xlsx=xlsxBlob(await excelData(orderId));const kmzBlob=(function(){return null})();const structures=(await all('structures')).filter(s=>s.orderId===orderId);const lums=await all('luminaires');const placemarks=[];for(const s of structures){if(!(s.lat&&s.lon))continue;const ll=lums.filter(l=>l.structureId===s.id),types=groupCount(ll,l=>`${l.technology} ${l.power}W`).map(([k,n])=>`${n} × ${k}`).join('<br>'),bad=structureBad(s),style=bad?'bad':s.class==='MT'?'mt':s.class==='CD'?'cd':'bt',findings=ll.filter(l=>l.findings?.length).map(l=>`${l.serial}: ${l.findings.join(' / ')} · ${l.finalState} · ${l.securityCondition||'SIN CONDICIÓN CRÍTICA'}`).join('<br>');placemarks.push(`<Placemark><name>${xml(`${s.node} · 💡 ${ll.length}`)}</name><styleUrl>#${style}</styleUrl><description><![CDATA[<b>Orden:</b> ${esc(s.order)}<br><b>CD:</b> ${esc(s.cd)}<br><b>Clasificación:</b> ${esc(s.class)}<br><b>Material:</b> ${esc(s.material)}<br><b>Características:</b> ${esc(s.characteristics)}<br><b>Red BT:</b> ${esc(s.network)}<br><b>Luminarias:</b> ${ll.length}<br>${types||'Sin luminarias'}${findings?'<br><b>Hallazgos:</b><br>'+findings:''}]]></description><Point><coordinates>${s.lon},${s.lat},0</coordinates></Point></Placemark>`)}const kml=`<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>AP Inventory - Orden ${xml(o.order)}</name>${kmlStyle('bt','ffff7b16')}${kmlStyle('mt','ffb35c14')}${kmlStyle('cd','ff1bb1e7')}${kmlStyle('bad','ff2020d9')}${placemarks.join('')}</Document></kml>`;const kmz=zipStore([{name:'doc.kml',data:kml}]);const pkg=await technicalPackage(orderId);const txt=`ORDEN: ${o.order}
+${await makeSummary(orderId)}
+`;const zip=zipStore([{name:`${o.order}.xlsx`,data:new Uint8Array(await xlsx.arrayBuffer())},{name:`${o.order}.kmz`,data:new Uint8Array(await kmz.arrayBuffer())},{name:`${o.order}.json`,data:JSON.stringify(pkg,null,2)},{name:`${o.order}.txt`,data:txt}]);download(`${o.order}_${date}.zip`,zip,'application/zip')}
+async function exportJson(orderId=null){const p=await technicalPackage(orderId),o=orderId?await get('orders',orderId):null;download(`AP_Inventory_${o?'Orden_'+o.order:'General'}.json`,JSON.stringify(p,null,2),'application/json')}
+async function orderTxt(orderId){const o=await get('orders',orderId),txt=`ORDEN: ${o.order}\r\n${await makeSummary(orderId)}\r\n`;download(`AP_Inventory_Orden_${o.order}.txt`,txt,'text/plain;charset=utf-8')}
+async function dailyTxt(){const os=await all('orders'),today=new Date().toISOString().slice(0,10);let candidates=[];for(const o of os){const st=await orderStats(o.id);if(!st.luminaires.length)continue;const touched=(o.updatedAt||o.createdAt||'').slice(0,10);if(touched===today)candidates.push(o)}if(!candidates.length){for(const o of os){const st=await orderStats(o.id);if(st.luminaires.length)candidates.push(o)}}if(!candidates.length){toast('No hay órdenes con inventario para generar el TXT');return}let out=`AP INVENTORY - RESUMEN DE ÓRDENES\r\nFECHA: ${new Date().toLocaleDateString('es-CO')}\r\n\r\n`;for(const o of candidates){out+=`==================================================\r\nORDEN: ${upper(o.order)}\r\n==================================================\r\n${await makeSummary(o.id)}\r\n\r\n`}download(`AP_Inventory_Resumenes_${new Date().toISOString().slice(0,10)}.txt`,out,'text/plain;charset=utf-8')}
+$('btnDownloadOrderTxt').onclick=()=>orderTxt(activeOrderId);$('btnDownloadOrderZip').onclick=()=>exportOrderZip(activeOrderId);$('btnOrderExcel').onclick=()=>exportExcel(activeOrderId);$('btnOrderKmz').onclick=()=>exportKmz(activeOrderId);$('btnOrderJson').onclick=()=>exportJson(activeOrderId);$('btnAllExcel').onclick=()=>exportExcel();$('btnAllKmz').onclick=()=>exportKmz();$('btnDailyTxt').onclick=dailyTxt;$('btnAllJson').onclick=()=>exportJson();$('btnAllZip').onclick=async()=>{const os=await all('orders');const usable=[];for(const o of os){const st=await orderStats(o.id);if(st.luminaires.length)usable.push(o)}if(!usable.length){toast('No hay órdenes con inventario para exportar en ZIP');return}for(const o of usable){await exportOrderZip(o.id)}toast('Se generó un ZIP por cada orden con inventario')}
+
+async function renderSyncInfo(){const p=await technicalPackage();$('syncInfo').innerHTML=`<b>${p.orders.length}</b> órdenes · <b>${p.structures.length}</b> estructuras · <b>${p.luminaires.length}</b> luminarias listas para paquete.`}
+$('btnPrepareSync').onclick=async()=>{const p=await technicalPackage(),id=p.exportId;await put('sync',{id,status:'pending',generatedAt:p.generatedAt,records:p.luminaires.length});download(`${id}.json`,JSON.stringify(p,null,2),'application/json');await dashboard();toast('Paquete de sincronización generado')};
+
+$('btnSettings').onclick=async()=>{const st=await getSettings();$('setName').value=st.name||'';$('setEmail').value=(st.email||'').toUpperCase();$('setCrew').value=upper(st.crew||'SIN CÓDIGO ASIGNADO');$('settingsModal').classList.add('open')};
+$('btnChangeUser').onclick=async()=>{await saveSettingsPatch({email:'',name:'',crew:''});$('settingsModal').classList.remove('open');await ensureUserSession()};
+$('btnLogin').onclick=async()=>{const email=String($('loginEmail').value||'').trim().toLowerCase(),u=userByEmail(email);if(!u){$('loginMatched').textContent='Correo no habilitado para AP Inventory. Verifica el correo corporativo o solicita revisión del listado.';$('loginMatched').classList.remove('hidden');return}await saveSettingsPatch({email:u.email,name:u.name,crew:u.crew||''});$('loginModal').classList.remove('open');await refreshHeader();toast(`Bienvenido, ${u.name}${u.crew?' · '+u.crew:''}`)};
+$('loginEmail').addEventListener('keydown',e=>{if(e.key==='Enter')$('btnLogin').click()});
+
+if('serviceWorker'  in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+(async()=>{await openDb();buildStructureFindings();setStructureNovelty('NO');buildLumFindings();setLumNovelty('NO');await dashboard();await ensureUserSession();})();
+</script>
+</body>
+</html>
