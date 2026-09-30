@@ -1,11 +1,12 @@
-/* AP Inventory v0.8.8 · matriz de hallazgos, turno nocturno y entrega */
-.theme-switch{height:37px;min-width:37px;border-radius:50%;border:1px solid #A7DFF8;background:#E6F7FF;color:#236B87;font-size:1.25rem;cursor:pointer;display:grid;place-items:center;margin-left:auto}
+/* AP Inventory v0.8.11 · matriz de hallazgos, turno nocturno y entrega */
+.theme-switch{height:37px;min-width:76px;padding:0 10px;border-radius:999px;border:1px solid #A7DFF8;background:#E6F7FF;color:#236B87;font-size:.82rem;font-weight:650;cursor:pointer;display:grid;place-items:center;margin-left:auto}
 #stCd~.hint,#cdFirstHint,#gpsTestNotice,#lmLabelHint,#lmTech+.hint{display:none!important}
 .matrix-group{border-bottom:1px solid #E7F0F4}.matrix-group:last-child{border:0}
 .matrix-heading{position:sticky;top:0;z-index:2;background:#E8F7FF;color:#145D7B;font-weight:650;font-size:.7rem;padding:5px 8px;letter-spacing:.045em}
 .matrix-group .finding-item{padding:6px 8px!important;min-height:33px!important}
 .matrix-group .finding-item span{font-size:.79rem!important;font-weight:400!important;line-height:1.17!important}
-#stFindingsWrap .finding-list.compact,#lmFindingsWrap .finding-list.compact{display:block!important;max-height:205px!important}
+#stFindingsWrap .finding-list.compact,#lmFindingsWrap .finding-list.compact{display:none!important;max-height:178px!important}
+#stFindingsWrap .multi-select[open] .finding-list.compact,#lmFindingsWrap .multi-select[open] .finding-list.compact{display:block!important}
 .sync-panel{max-width:880px}
 .sync-buttons{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .sync-buttons button{min-height:48px;white-space:normal}
