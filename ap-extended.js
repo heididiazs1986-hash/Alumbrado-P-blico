@@ -1,4 +1,4 @@
-/* AP Inventory 0.8.8 · hallazgos matriciales, nocturno y entrega */
+/* AP Inventory 0.8.11 · hallazgos matriciales, nocturno y entrega */
 (()=>{
 'use strict';
 const byId=id=>document.getElementById(id);
@@ -70,7 +70,7 @@ const themeKey='ap_inventory_theme';
 function setTheme(name){
  const dark=name==='dark';document.documentElement.dataset.theme=dark?'dark':'light';
  const btn=byId('btnTheme');
- if(btn){btn.textContent=dark?'☀':'☾';btn.setAttribute('aria-label',dark?'Modo claro':'Modo nocturno');btn.setAttribute('aria-pressed',String(dark))}
+ if(btn){btn.textContent=dark?'☀ Claro':'☾ Noche';btn.setAttribute('aria-label',dark?'Usar modo claro':'Usar modo nocturno');btn.setAttribute('aria-pressed',String(dark))}
  const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=dark?'#121B24':'#FEFEFF';
 }
 try{setTheme(localStorage.getItem(themeKey)==='dark'?'dark':'light')}catch{setTheme('light')}
@@ -93,13 +93,16 @@ async function refreshDelivery(){
 }
 const originalPut=put;
 const oldRender=renderSyncInfo;
-renderSyncInfo=async function(){await oldRender();await refreshDelivery()};
+renderSyncInfo=async function(){const d=await dailyContext();const info=byId('syncInfo');if(info)info.innerHTML=`<b>${d.orders.length}</b> órdenes · <b>${d.structures.length}</b> estructuras · <b>${d.luminaires.length}</b> luminarias`;await refreshDelivery()};
 (async()=>{try{for(let n=0;n<40&&!db;n++)await new Promise(r=>setTimeout(r,100));if(!db)return;const s=await getSettings();urlField.value=s.syncUploadUrl||'';await refreshDelivery()}catch(e){console.warn('Sync',e)}})();
 urlField?.addEventListener('change',async()=>{
  const text=urlField.value.trim();
  if(text){try{if(new URL(text).protocol!=='https:')throw Error('HTTPS')}catch{toast('Introduce un vínculo de carga HTTPS');return}}
  await saveSettingsPatch({syncUploadUrl:text});toast(text?'Vínculo de recepción guardado':'Vínculo eliminado');
 });
+byId('btnSyncExcel')?.addEventListener('click',()=>exportExcel(null));
+byId('btnSyncZip')?.addEventListener('click',()=>exportDailyPhotosZip(localDateKey()));
+byId('btnSyncKmz')?.addEventListener('click',()=>exportKmzByCd());
 byId('btnPrepareSync').onclick=async()=>{
  const btn=byId('btnPrepareSync');btn.disabled=true;btn.textContent='Preparando…';
  try{
