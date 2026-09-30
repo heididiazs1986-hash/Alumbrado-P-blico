@@ -458,12 +458,15 @@ body,.field input,.field textarea,.field select{font-weight:400}
 .form-actions .primary-btn{background:#FF6600;color:#fff}
 @media(max-width:420px){.form-actions{grid-template-columns:minmax(0,1fr) minmax(0,1.7fr)}}
 </style>
+<link rel="stylesheet" href="ui-refinement.css?v=087" />
+<link rel="stylesheet" href="ap-extended.css?v=087" />
 </head>
 <body>
 <header class="appbar">
   <div class="row">
     <div class="brandmark" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none"><path d="M18 55V22c0-6 4-10 10-10h9" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M36 13h14l-6 8H32l4-8Z" fill="currentColor"/><path d="M18 55h11" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></div>
     <div class="brand"><b>AP Inventory</b><span>Inventario de Alumbrado Público</span></div>
+    <button type="button" class="theme-switch" id="btnTheme" aria-label="Activar modo nocturno" title="Modo nocturno">☾</button>
     <div class="offline" id="netBadge">● Offline listo</div>
   </div>
 </header>
@@ -564,7 +567,15 @@ body,.field input,.field textarea,.field select{font-weight:400}
 
   <section class="screen" id="screenSync">
     <div class="toolbar"><button class="back" data-go="home">←</button><h2>Sincronización</h2></div>
-    <div class="card"><div class="notice blue"><b>Preparar sincronización:</b> genera el Excel diario de registros, el ZIP diario de fotografías y los KMZ independientes por CD. El TXT de resumen ENEL se administra aparte.</div><div class="mt12 small" id="syncInfo"></div><button class="primary-btn full mt12" id="btnPrepareSync">Preparar archivos del día</button></div>
+    <div class="card sync-panel">
+      <div class="section-title"><span class="dot"></span>Entrega de inventario</div>
+      <div class="mt12 small" id="syncInfo"></div>
+      <div class="sync-state" id="syncState" role="status" aria-live="polite">Sin archivos preparados.</div>
+      <div class="field mt12"><label for="syncUploadUrl">Vínculo de recepción</label><input type="url" id="syncUploadUrl" placeholder="Pegar vínculo de carga una sola vez" autocomplete="url" /></div>
+      <div class="sync-buttons mt12"><button class="primary-btn" type="button" id="btnPrepareSync">Preparar</button><button class="secondary-btn" type="button" id="btnOpenSync">Subir archivos</button></div>
+      <button type="button" class="tiny-btn mt12" id="btnConfirmSync">Ya cargué los archivos</button>
+      <div class="small sync-note">El envío se confirma en el navegador; aquí queda pendiente de verificación administrativa.</div>
+    </div>
   </section>
 </main>
 <input class="hidden" type="file" id="programJsonFile" accept=".json,application/json" />
@@ -1090,5 +1101,7 @@ document.addEventListener('blur',e=>forceOperationalUppercase(e.target),true);
 if('serviceWorker'  in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 (async()=>{await openDb();await migrateLegacyLumLabels();populateLoginUsers();buildStructureFindings();setStructureNovelty('NO');buildLumFindings();setLumNovelty('NO');await dashboard();await ensureUserSession();})();
 </script>
+<script src="ui-refinement.js?v=087"></script>
+<script src="ap-extended.js?v=087"></script>
 </body>
 </html>
