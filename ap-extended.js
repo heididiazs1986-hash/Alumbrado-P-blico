@@ -1,4 +1,4 @@
-/* AP Inventory 0.8.7 · hallazgos matriciales, nocturno y entrega */
+/* AP Inventory 0.8.8 · hallazgos matriciales, nocturno y entrega */
 (()=>{
 'use strict';
 const byId=id=>document.getElementById(id);
@@ -37,15 +37,15 @@ function cat(type,id){
 function groupInput(box,catalog,type,onChange){
  const old=new Set([...box.querySelectorAll('input:checked')].map(x=>x.value));
  const groups=new Map();
- for(const f of catalog){const group=cat(type,f.id);if(!groups.has(group))groups.set(group,[]);groups.get(group).push(f)}
+ for(const f of catalog){const group=type==='structure'?apGroupStructure(f):apGroupLum(f);if(!groups.has(group))groups.set(group,[]);groups.get(group).push(f)}
  box.replaceChildren();
  for(const [name,items] of groups){
   const section=document.createElement('div');section.className='matrix-group';
   const head=document.createElement('div');head.className='matrix-heading';head.textContent=name;section.append(head);
   for(const f of items){
    const row=document.createElement('label');row.className='finding-item';
-   const ck=document.createElement('input');ck.type='checkbox';ck.value=f.id;ck.checked=old.has(f.id);ck.addEventListener('change',onChange);
-   const span=document.createElement('span');span.textContent=f.label;row.append(ck,span);section.append(row);
+   const ck=document.createElement('input');ck.type='checkbox';ck.value=f.id;ck.checked=old.has(f.id);ck.addEventListener('change',()=>{row.classList.toggle('is-selected',ck.checked);row.setAttribute('aria-selected',String(ck.checked));onChange()});
+   const span=document.createElement('span');span.textContent=f.label;row.append(ck,span);row.classList.toggle('is-selected',ck.checked);row.setAttribute('aria-selected',String(ck.checked));section.append(row);
   }box.append(section);
  }onChange();
 }
@@ -58,32 +58,8 @@ function matched(record,type){
  const catalog=type==='structure'?[...STRUCTURE_FINDINGS_COMMON,...(STRUCTURE_FINDINGS_BY_MATERIAL[record.material]||[])]:lumCatalog;
  return labels.map(label=>{const f=catalog.find(x=>String(x.label).toUpperCase()===String(label).toUpperCase());return {id:f?.id||'',description:String(label).toUpperCase(),category:f?cat(type,f.id):'OTRAS OBSERVACIONES'}});
 }
-const originalPut=put;
-put=async function(store,record){
- if(['structures','luminaires'].includes(store)&&Array.isArray(record?.findings)){
-  const f=matched(record,store==='structures'?'structure':'luminaire');
-  record={...record,findingCategories:f.map(x=>x.category),findingDetails:f.map(x=>x.description),findingIds:f.map(x=>x.id)};
- }
- return originalPut(store,record);
-};
-const originalExcel=excelData;
-excelData=async function(...args){
- const sheets=await originalExcel(...args);
- const [ss,ll]=await Promise.all([all('structures'),all('luminaires')]);
- const maps=[new Map(ss.map(s=>[s.id,s])),new Map(ll.map(l=>[l.id,l]))];
- sheets.forEach((sheet,n)=>{
-  const rows=sheet.rows;if(!rows?.length)return;
-  const key=rows[0].indexOf(n?'ID_LUMINARIA':'ID_ESTRUCTURA');
-  const pos=rows[0].indexOf(n?'NOVEDADES_LUMINARIA':'NOVEDADES_ESTRUCTURA');
-  if(key<0||pos<0)return;
-  rows[0].splice(pos,1,'CATEGORIA_NOVEDAD','DESCRIPCION_NOVEDAD');
-  for(let i=1;i<rows.length;i++){
-   const f=matched(maps[n].get(rows[i][key])||{},n?'luminaire':'structure');
-   rows[i].splice(pos,1,f.map(x=>x.category).join(' | '),f.map(x=>x.description).join(' | '));
-  }
- });
- return sheets;
-};
+/* La persistencia y exportación de la matriz están ahora en index.html.
+   No sobrescribir findingDetails: deben conservarse como objetos {id,category,description}. */
 const themeKey='ap_inventory_theme';
 function setTheme(name){
  const dark=name==='dark';document.documentElement.dataset.theme=dark?'dark':'light';
@@ -109,6 +85,7 @@ async function refreshDelivery(){
   openBtn.disabled=false;confirmBtn.disabled=false;
  }
 }
+const originalPut=put;
 const oldRender=renderSyncInfo;
 renderSyncInfo=async function(){await oldRender();await refreshDelivery()};
 (async()=>{try{for(let n=0;n<40&&!db;n++)await new Promise(r=>setTimeout(r,100));if(!db)return;const s=await getSettings();urlField.value=s.syncUploadUrl||'';await refreshDelivery()}catch(e){console.warn('Sync',e)}})();
@@ -128,11 +105,10 @@ byId('btnPrepareSync').onclick=async()=>{
   await refreshDelivery();await dashboard();toast('Archivos listos. Falta cargarlos en recepción.');
  }catch(e){console.error(e);toast('No se prepararon todos los archivos')}finally{btn.disabled=false;btn.textContent='Preparar'}
 };
-openBtn?.addEventListener('click',async()=>{
+openBtn?.addEventListener('click',()=>{
  const text=urlField.value.trim();
  try{if(new URL(text).protocol!=='https:')throw Error('HTTPS')}catch{toast('Configura primero un vínculo válido de recepción');return}
- await saveSettingsPatch({syncUploadUrl:text});
- window.open(text,'_blank','noopener');toast('Adjunta el Excel, ZIP fotográfico y KMZ en la página de recepción');
+ const popup=window.open(text,'_blank','noopener');saveSettingsPatch({syncUploadUrl:text}).catch(console.warn);toast(popup===null?'Abre el vínculo de recepción permitido desde el navegador':'Adjunta Excel, ZIP y KMZ. La carga requiere confirmación');
 });
 confirmBtn?.addEventListener('click',async()=>{
  const date=localDateKey(),r=await get('sync','SYNC-'+date);
