@@ -1,0 +1,11 @@
+{
+  "name": "AP Inventory - Inventario de Alumbrado Público",
+  "short_name": "AP Inventory",
+  "description": "Inventario de estructuras y luminarias con trabajo offline",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "scope": "./",
+  "background_color": "#FEFEFF",
+  "theme_color": "#FF6600",
+  "icons": [{"src":"app-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
