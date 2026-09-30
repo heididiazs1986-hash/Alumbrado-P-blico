@@ -1,4 +1,4 @@
-/* AP Inventory v0.8.7 · matriz de hallazgos, turno nocturno y entrega */
+/* AP Inventory v0.8.8 · matriz de hallazgos, turno nocturno y entrega */
 .theme-switch{height:37px;min-width:37px;border-radius:50%;border:1px solid #A7DFF8;background:#E6F7FF;color:#236B87;font-size:1.25rem;cursor:pointer;display:grid;place-items:center;margin-left:auto}
 #stCd~.hint,#cdFirstHint,#gpsTestNotice,#lmLabelHint,#lmTech+.hint{display:none!important}
 .matrix-group{border-bottom:1px solid #E7F0F4}.matrix-group:last-child{border:0}
@@ -36,3 +36,43 @@ html[data-theme="dark"] .theme-switch{background:#2F4C62;color:#FFE0BB;border-co
 html[data-theme="dark"] .control-info-option strong{color:#79D1FF}
 html[data-theme="dark"] .control-info-option small{color:#C2D2DE}
 @media(max-width:390px){.sync-buttons{grid-template-columns:1fr}}
+
+/* 0.8.8: una pulsación sobre la descripción selecciona; sin casilla visible. */
+#stFindingsWrap .matrix-group .finding-item,
+#lmFindingsWrap .matrix-group .finding-item{
+ display:block!important;position:relative;cursor:pointer;min-height:36px!important;
+ margin:2px!important;padding:8px 10px!important;border:1px solid transparent!important;
+ border-radius:8px!important;background:#FEFEFF!important;transition:background .12s,border-color .12s
+}
+#stFindingsWrap .matrix-group .finding-item input[type=checkbox],
+#lmFindingsWrap .matrix-group .finding-item input[type=checkbox]{
+ position:absolute!important;left:0;top:0;width:1px!important;height:1px!important;
+ opacity:0!important;pointer-events:none!important;margin:0!important
+}
+#stFindingsWrap .matrix-group .finding-item span,
+#lmFindingsWrap .matrix-group .finding-item span{
+ display:block!important;font-size:.8rem!important;font-weight:450!important;
+ line-height:1.25!important;color:#344F60!important
+}
+#stFindingsWrap .matrix-group .finding-item.is-selected,
+#lmFindingsWrap .matrix-group .finding-item.is-selected,
+#stFindingsWrap .matrix-group .finding-item:has(input:checked),
+#lmFindingsWrap .matrix-group .finding-item:has(input:checked){
+ background:#E8F7FF!important;border-color:#79D1FF!important;box-shadow:inset 3px 0 #FF6600
+}
+#stFindingsWrap .matrix-group .finding-item.is-selected span,
+#lmFindingsWrap .matrix-group .finding-item.is-selected span{color:#125A7A!important;font-weight:650!important}
+#stFindingsWrap .matrix-group .finding-item:focus-within,
+#lmFindingsWrap .matrix-group .finding-item:focus-within{outline:2px solid #FF6600;outline-offset:1px}
+#stFindingsWrap .matrix-heading,#lmFindingsWrap .matrix-heading{
+ padding:5px 8px!important;font-size:.72rem!important;
+ background:#E8F7FF!important;color:#126184!important
+}
+html[data-theme="dark"] #stFindingsWrap .matrix-group .finding-item,
+html[data-theme="dark"] #lmFindingsWrap .matrix-group .finding-item{background:#283B49!important}
+html[data-theme="dark"] #stFindingsWrap .matrix-group .finding-item span,
+html[data-theme="dark"] #lmFindingsWrap .matrix-group .finding-item span{color:#E2EDF5!important}
+html[data-theme="dark"] #stFindingsWrap .matrix-group .finding-item.is-selected,
+html[data-theme="dark"] #lmFindingsWrap .matrix-group .finding-item.is-selected{background:#24536B!important}
+html[data-theme="dark"] #stFindingsWrap .matrix-heading,
+html[data-theme="dark"] #lmFindingsWrap .matrix-heading{background:#20465D!important;color:#BDEFFF!important}
