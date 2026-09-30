@@ -1,0 +1,38 @@
+/* AP Inventory v0.8.7 · matriz de hallazgos, turno nocturno y entrega */
+.theme-switch{height:37px;min-width:37px;border-radius:50%;border:1px solid #A7DFF8;background:#E6F7FF;color:#236B87;font-size:1.25rem;cursor:pointer;display:grid;place-items:center;margin-left:auto}
+#stCd~.hint,#cdFirstHint,#gpsTestNotice,#lmLabelHint,#lmTech+.hint{display:none!important}
+.matrix-group{border-bottom:1px solid #E7F0F4}.matrix-group:last-child{border:0}
+.matrix-heading{position:sticky;top:0;z-index:2;background:#E8F7FF;color:#145D7B;font-weight:650;font-size:.7rem;padding:5px 8px;letter-spacing:.045em}
+.matrix-group .finding-item{padding:6px 8px!important;min-height:33px!important}
+.matrix-group .finding-item span{font-size:.79rem!important;font-weight:400!important;line-height:1.17!important}
+#stFindingsWrap .finding-list.compact,#lmFindingsWrap .finding-list.compact{display:block!important;max-height:205px!important}
+.sync-panel{max-width:880px}
+.sync-buttons{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.sync-buttons button{min-height:48px;white-space:normal}
+.sync-state{border:1px solid #B9E3F3;background:#E8F7FF;color:#154F67;border-radius:12px;padding:10px 12px;margin-top:12px;font-size:.87rem;line-height:1.45}
+.sync-state.pending{border-color:#FFC69F;background:#FFF4EA;color:#8A3B00}
+.sync-state.sent{border-color:#A8DCC6;background:#E7F6EF;color:#24684D}
+.sync-note{margin-top:9px;color:#647481!important;font-size:.75rem!important;font-weight:400!important;line-height:1.35}
+html[data-theme="dark"],html[data-theme="dark"] body{color-scheme:dark;background:#121B24!important;color:#EBF4F8!important;--neutral:#1B2733;--surface:#131E28;--surface-2:#273746;--ink:#EEF7FA;--muted:#C1CDD6;--edge:#425565;--edge-strong:#536A7A;--shadow-soft:0 1px 3px rgba(0,0,0,.28);--tertiary-soft:#203F52;--tertiary-deep:#79D1FF;--line:#465868;--text:#F1F7F9;--blue:#79D1FF}
+html[data-theme="dark"] .appbar,html[data-theme="dark"] .bottomnav,html[data-theme="dark"] .card,html[data-theme="dark"] .order-card,html[data-theme="dark"] .lum-card,html[data-theme="dark"] .kpi,html[data-theme="dark"] .sheet,html[data-theme="dark"] .login-user-card{background:#1B2733!important;color:#F1F7F9!important;border-color:#435464!important}
+html[data-theme="dark"] .hero{background:linear-gradient(120deg,#1E2F3D,#253B4A)!important;border-color:#435464!important;border-left-color:#FF6600!important}
+html[data-theme="dark"] .brand b,html[data-theme="dark"] .crew-info b,html[data-theme="dark"] .toolbar h2,html[data-theme="dark"] .section-title,html[data-theme="dark"] .kpi .n,html[data-theme="dark"] .sheet h3{color:#F3F8FB!important}
+html[data-theme="dark"] .brand span,html[data-theme="dark"] .crew-info span,html[data-theme="dark"] .small,html[data-theme="dark"] .order-meta,html[data-theme="dark"] .hint,html[data-theme="dark"] .lum-grid span,html[data-theme="dark"] .field label{color:#C4D2DC!important}
+html[data-theme="dark"] .field input,html[data-theme="dark"] .field select,html[data-theme="dark"] .field textarea,html[data-theme="dark"] .searchbox,html[data-theme="dark"] .multi-select,html[data-theme="dark"] .action:not(.primary):not(.success),html[data-theme="dark"] .reference-tile,html[data-theme="dark"] .tiny-btn,html[data-theme="dark"] .secondary-btn,html[data-theme="dark"] .back{background:#263644!important;color:#F3F8FB!important;border-color:#536678!important}
+html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::placeholder{color:#B0BECA!important;opacity:.85}
+html[data-theme="dark"] .seg,html[data-theme="dark"] .tabs,html[data-theme="dark"] .tab{background:#273949!important;color:#D2DFE8!important}
+html[data-theme="dark"] .seg button:not(.active),html[data-theme="dark"] .tab:not(.active){color:#D2DFE8!important}
+html[data-theme="dark"] .notice.blue,html[data-theme="dark"] #activeOrderNotice,html[data-theme="dark"] .tech-help,html[data-theme="dark"] .sync-state,html[data-theme="dark"] .program-status{background:#203D50!important;color:#C7EDFF!important;border-color:#4A7186!important}
+html[data-theme="dark"] .notice.amber,html[data-theme="dark"] .sync-state.pending{background:#493422!important;color:#FFD1AA!important;border-color:#826044!important}
+html[data-theme="dark"] .state-ok{background:#164934!important;color:#B9F0CF!important;border-color:#34765A!important}
+html[data-theme="dark"] .state-warn{background:#51371B!important;color:#FFDEA8!important;border-color:#866040!important}
+html[data-theme="dark"] .state-bad{background:#51282B!important;color:#FFC5C5!important;border-color:#A46B72!important}
+html[data-theme="dark"] .finding-list.compact,html[data-theme="dark"] .finding-item,html[data-theme="dark"] .control-info-popover,html[data-theme="dark"] .control-info-option{background:#283B49!important;color:#F3F8FB!important;border-color:#445E6E!important}
+html[data-theme="dark"] .finding-item:has(input:checked){background:#24536B!important}
+html[data-theme="dark"] .matrix-heading{background:#20465D;color:#BDEFFF}
+html[data-theme="dark"] .bottomnav .navbtn.active{background:#27516A!important;color:#FFAB75!important}
+html[data-theme="dark"] .bottomnav .navbtn:not(.active){color:#CAD5DE!important}
+html[data-theme="dark"] .theme-switch{background:#2F4C62;color:#FFE0BB;border-color:#52768A}
+html[data-theme="dark"] .control-info-option strong{color:#79D1FF}
+html[data-theme="dark"] .control-info-option small{color:#C2D2DE}
+@media(max-width:390px){.sync-buttons{grid-template-columns:1fr}}
