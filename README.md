@@ -1,3 +1,9 @@
+## AP Inventory v0.8.10 — capacidad del transformador
+
+En **Nueva estructura AP**, cuando el tipo es **CD**, aparece un selector obligatorio **Capacidad del transformador (kVA)**, con el catálogo exacto de GS Diagnósticos: 5, 10, 15, 25, 30, 45, 75, 112.5, 150 y 225 kVA. No se muestra para MT/BT: estos nodos heredan la capacidad del CD de la misma orden. En una estructura CD ya registrada, la ficha permite agregar o corregir el kVA y actualizar los nodos asociados sin borrar datos.
+
+La hoja **ESTRUCTURAS** agrega la columna `CAPACIDAD_TRANSFORMADOR_KVA`. El KMZ por CD presenta también este dato. Si tienes un flujo de Power Automate que lee `tbl_Estructuras`, revisa el mapeo de esta columna antes de usar el maestro. Se renovó la caché PWA a `ap-inventory-static-v0810`.
+
 # AP Inventory v0.8.8 — cambios de interfaz, matrices y sincronización
 
 - Multiselect de novedades de estructuras y luminarias agrupado por categoría y presentado como **opciones compactas resaltadas**. El checkbox permanece únicamente como control accesible oculto, sin segunda casilla visible.
