@@ -76,3 +76,59 @@ html[data-theme="dark"] #stFindingsWrap .matrix-group .finding-item.is-selected,
 html[data-theme="dark"] #lmFindingsWrap .matrix-group .finding-item.is-selected{background:#24536B!important}
 html[data-theme="dark"] #stFindingsWrap .matrix-heading,
 html[data-theme="dark"] #lmFindingsWrap .matrix-heading{background:#20465D!important;color:#BDEFFF!important}
+
+/* 0.8.9 — Jerarquía visual: categoría naranja tenue, hallazgo elegido azul.
+   Se aplica por igual a estructuras y luminarias, incluso en modo oscuro. */
+#stFindingsWrap .matrix-heading,
+#lmFindingsWrap .matrix-heading {
+  background: #FFF2E9 !important;
+  color: #94420F !important;
+  border-bottom: 1px solid #FFD8C0 !important;
+  font-weight: 650 !important;
+}
+
+#stFindingsWrap .matrix-group .finding-item.is-selected,
+#lmFindingsWrap .matrix-group .finding-item.is-selected,
+#stFindingsWrap .matrix-group .finding-item:has(input:checked),
+#lmFindingsWrap .matrix-group .finding-item:has(input:checked) {
+  background: #E8F7FF !important;
+  border-color: #79D1FF !important;
+  box-shadow: inset 3px 0 #3FA9D6 !important;
+}
+
+#stFindingsWrap .matrix-group .finding-item.is-selected span,
+#lmFindingsWrap .matrix-group .finding-item.is-selected span,
+#stFindingsWrap .matrix-group .finding-item:has(input:checked) span,
+#lmFindingsWrap .matrix-group .finding-item:has(input:checked) span {
+  color: #105C7B !important;
+  font-weight: 650 !important;
+}
+
+#stFindingsWrap .matrix-group .finding-item:focus-within,
+#lmFindingsWrap .matrix-group .finding-item:focus-within {
+  outline: 2px solid #79D1FF !important;
+  outline-offset: 1px;
+}
+
+html[data-theme="dark"] #stFindingsWrap .matrix-heading,
+html[data-theme="dark"] #lmFindingsWrap .matrix-heading {
+  background: #493224 !important;
+  color: #FFD3B5 !important;
+  border-bottom-color: #76513A !important;
+}
+
+html[data-theme="dark"] #stFindingsWrap .matrix-group .finding-item.is-selected,
+html[data-theme="dark"] #lmFindingsWrap .matrix-group .finding-item.is-selected,
+html[data-theme="dark"] #stFindingsWrap .matrix-group .finding-item:has(input:checked),
+html[data-theme="dark"] #lmFindingsWrap .matrix-group .finding-item:has(input:checked) {
+  background: #214B63 !important;
+  border-color: #79D1FF !important;
+  box-shadow: inset 3px 0 #79D1FF !important;
+}
+
+html[data-theme="dark"] #stFindingsWrap .matrix-group .finding-item.is-selected span,
+html[data-theme="dark"] #lmFindingsWrap .matrix-group .finding-item.is-selected span,
+html[data-theme="dark"] #stFindingsWrap .matrix-group .finding-item:has(input:checked) span,
+html[data-theme="dark"] #lmFindingsWrap .matrix-group .finding-item:has(input:checked) span {
+  color: #E4F7FF !important;
+}
