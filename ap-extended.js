@@ -52,6 +52,12 @@ function groupInput(box,catalog,type,onChange){
 buildStructureFindings=function(){groupInput(byId('stFindings'),currentStructureFindingCatalog(),'structure',updateStructureCalculatedState)};
 buildLumFindings=function(){groupInput(byId('lumFindings'),currentLumFindingCatalog(),'luminaire',updateLumCalculatedState)};
 buildStructureFindings();buildLumFindings();
+/* Cuando se elige NO, la aplicación limpia las selecciones y el resaltado visual. */
+function clearFindingHighlight(id){document.querySelectorAll('#'+id+' .finding-item').forEach(row=>{const c=row.querySelector('input');row.classList.toggle('is-selected',!!c?.checked);row.setAttribute('aria-selected',String(!!c?.checked))})}
+document.querySelectorAll('#stNoveltySeg button,#lmNoveltySeg button').forEach(btn=>btn.addEventListener('click',()=>{
+ const id=btn.closest('#stNoveltySeg')?'stFindings':'lumFindings';
+ queueMicrotask(()=>clearFindingHighlight(id));
+}));
 const lumCatalog=[...LUM_FINDINGS_COMMON,...LUM_FINDINGS_LED,...LUM_FINDINGS_CONVENTIONAL,...LUM_FINDINGS_PHOTOCELL,...LUM_FINDINGS_SOLAR];
 function matched(record,type){
  const labels=Array.isArray(record?.findings)?record.findings:[];
