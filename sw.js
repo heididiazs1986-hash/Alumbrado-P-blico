@@ -1,7 +1,7 @@
-/* AP Inventory v0.8.5.2 · cache propio y referencias fotográficas offline */
-const CACHE_NAME='ap-inventory-static-v0852';
+/* AP Inventory v0.8.7 · cache propio y referencias fotográficas offline */
+const CACHE_NAME='ap-inventory-static-v087';
 const ASSETS=[
- './','./index.html','./app-config.js','./manifest.json','./app-icon.svg',
+ './','./index.html','./ui-refinement.css','./ui-refinement.js','./ap-extended.css','./ap-extended.js','./app-config.js','./manifest.json','./app-icon.svg',
  './assets/led.webp','./assets/fluorescente.webp','./assets/halogenuro.webp',
  './assets/mercurio.webp','./assets/sodio_alta.webp','./assets/sodio_baja.webp',
  './assets/halogena.webp','./assets/incandescente.webp','./assets/induccion.webp'
