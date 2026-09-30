@@ -1,3 +1,18 @@
+# AP Inventory v0.8.8 — cambios de interfaz, matrices y sincronización
+
+- Multiselect de novedades de estructuras y luminarias agrupado por categoría y presentado como **opciones compactas resaltadas**. El checkbox permanece únicamente como control accesible oculto, sin segunda casilla visible.
+- Matriz de hallazgos: los registros guardan `id`, `category` y `description`; el Excel presenta **GRUPO_NOVEDAD_…** y **DESCRIPCION_NOVEDAD_…** en ambas tablas. Los registros previos se pueden exportar a partir de sus etiquetas.
+- Formulario sin párrafos explicativos bajo el CD ni observación de solicitud extendida. Encabezado con orden, cuenta, municipio, sector y coordenadas de programación **identificadas como referencia**, nunca utilizadas como GPS capturado.
+- Botón **Coordenadas**, acciones cortas y azul `#79D1FF` con naranja `#FF6600`, gris `#C1C7CE` y neutral `#FEFEFF`.
+- El icono luna/sol cambia entre modos claro y nocturno, conservando la preferencia local.
+- Ayuda contextual flotante de **Fotocelda, Telegestión, Temporizador y Sin control**.
+- Sincronización diferenciada de Exportar: preparación de Excel/fotos/KMZ, vínculo de recepción HTTPS guardado, apertura del formulario de carga y estado **CARGA REPORTADA / PENDIENTE DE VERIFICACIÓN**. No declara sincronización confirmada por el servidor.
+- Actualización de caché PWA a `ap-inventory-static-v088` para instalar archivos de interfaz y referencias offline.
+
+**Pendiente antes del uso operativo:** confirmar una vía de recepción permitida por el tenant, probar carga completa en móvil y reactivar GPS obligatorio ≤12 m (`REQUIRE_GPS_12M`). El PIN maestro no está configurado ni debe publicarse en el repositorio.
+
+---
+
 # AP Inventory v0.8.5.2 – paquete fuente para pruebas
 
 ## Cambios integrados (v0.8.5)
