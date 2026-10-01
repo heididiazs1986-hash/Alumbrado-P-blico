@@ -618,7 +618,7 @@ body,.field input,.field textarea,.field select{font-weight:400}
 const $=id=>document.getElementById(id);
 const qsa=s=>[...document.querySelectorAll(s)];
 const DB_NAME='APInventoryDB', DB_VER=1;
-const REQUIRE_GPS_12M=false; // MODO PRUEBAS: volver a true antes de distribuir a campo.
+const REQUIRE_GPS_12M=false; // Validación GPS temporalmente no bloqueante.
 const PHOTO_MIN=3, PHOTO_MAX=7;
 let db=null, activeOrderId=null, activeStructureId=null, orderFilter='all', stClass='CD', selectedPhotos=[], selectedLumPhotos=[];
 const STRUCTURE_FINDINGS_CD=[
@@ -813,11 +813,11 @@ function updateGpsVisual(lat='',lon='',acc=null){
   const raw=String(acc??''),a=raw.trim()===''?NaN:Number(acc),hasPoint=lat!==''&&lon!==''&&Number.isFinite(Number(lat))&&Number.isFinite(Number(lon)),hasAccuracy=Number.isFinite(a),ok=hasPoint&&hasAccuracy&&a<=12,bad=hasPoint&&hasAccuracy&&a>12;
   const title=$('gpsStatusTitle'),meta=$('gpsStatusMeta'),badge=$('gpsStatusBadge'),ring=$('gpsAccuracyRing'),note=$('gpsMapNote');if(!title)return;
   if(ok){title.textContent='Ubicación capturada';meta.textContent=`${Number(lat).toFixed(6)}, ${Number(lon).toFixed(6)} · precisión ${a.toFixed(1)} m`;badge.textContent='GPS REGISTRADO';badge.className='gps-status-badge ok';ring.classList.remove('bad');}
-  else if(bad){title.textContent='Ubicación aproximada';meta.textContent=`${Number(lat).toFixed(6)}, ${Number(lon).toFixed(6)} · ${a.toFixed(1)} m (pruebas: se puede guardar)`;badge.textContent=REQUIRE_GPS_12M?'REPETIR':'EN PRUEBAS';badge.className='gps-status-badge '+(REQUIRE_GPS_12M?'bad':'');ring.classList.toggle('bad',REQUIRE_GPS_12M);}
-  else if(hasPoint){title.textContent='Ubicación sin precisión';meta.textContent=`${Number(lat).toFixed(6)}, ${Number(lon).toFixed(6)} · precisión pendiente`;badge.textContent='EN PRUEBAS';badge.className='gps-status-badge';ring.classList.remove('bad');}
-  else{title.textContent='Ubicación pendiente';meta.textContent=REQUIRE_GPS_12M?'Captura una ubicación con precisión máxima de 12 m.':'MODO PRUEBAS: puedes guardar sin GPS ni precisión válida.';badge.textContent='SIN GPS';badge.className='gps-status-badge';ring.classList.remove('bad');}
+  else if(bad){title.textContent='Ubicación aproximada';meta.textContent=`${Number(lat).toFixed(6)}, ${Number(lon).toFixed(6)} · ${a.toFixed(1)} m · se recomienda 12 m o menos`;badge.textContent=REQUIRE_GPS_12M?'REPETIR':'GPS APROX.';badge.className='gps-status-badge '+(REQUIRE_GPS_12M?'bad':'');ring.classList.toggle('bad',REQUIRE_GPS_12M);}
+  else if(hasPoint){title.textContent='Ubicación sin precisión';meta.textContent=`${Number(lat).toFixed(6)}, ${Number(lon).toFixed(6)} · precisión pendiente`;badge.textContent='SIN PRECISIÓN';badge.className='gps-status-badge';ring.classList.remove('bad');}
+  else{title.textContent='Ubicación pendiente';meta.textContent=REQUIRE_GPS_12M?'Captura una ubicación con precisión máxima de 12 m.':'Se recomienda precisión de 12 metros o menos.';badge.textContent='SIN GPS';badge.className='gps-status-badge';ring.classList.remove('bad');}
   const px=hasAccuracy?Math.max(42,Math.min(108,36+a*5)):72;ring.style.width=px+'px';ring.style.height=px+'px';
-  note.textContent=hasAccuracy?`PRECISIÓN ${a.toFixed(1)} M`:REQUIRE_GPS_12M?'PRECISIÓN ≤ 12 M':'GPS EN PRUEBAS';
+  note.textContent=hasAccuracy?`PRECISIÓN ${a.toFixed(1)} M`:'PRECISIÓN RECOMENDADA ≤ 12 M';
 }
 function resetStructure(){activeStructureId=null;selectedPhotos=[];$('stCd').value='';$('stCapacity').value='';$('stNode').value='';$('stMaterial').value='';$('stChar').innerHTML='<option value="">Selecciona tipo y material…</option>';$('stNetwork').value='';$('stLat').value='';$('stLon').value='';$('stAcc').value='';$('stObs').value='';setClass('CD');stNovelty='NO';buildStructureFindings();setStructureNovelty('NO');renderPhotos();updateGpsVisual()}
 // Cancelar descarta solo el borrador; nunca borra estructuras ya guardadas.
@@ -899,15 +899,15 @@ $('lmType').addEventListener('change',updateTypeHelp);
 
 $('lmTech').addEventListener('change',updateTechHelp);
 $('btnGps').onclick=()=>{
-  if(!navigator.geolocation){toast('GPS no disponible. En modo pruebas puedes continuar sin coordenadas.');return}
+  if(!navigator.geolocation){toast('GPS no disponible. Puedes continuar y actualizar las coordenadas en terreno.');return}
   toast('Buscando ubicación…');
   navigator.geolocation.getCurrentPosition(p=>{
     const acc=Number(p.coords.accuracy),lat=p.coords.latitude.toFixed(6),lon=p.coords.longitude.toFixed(6);
     $('stAcc').value=Number.isFinite(acc)?acc.toFixed(1):'';
     if(REQUIRE_GPS_12M&&(!Number.isFinite(acc)||acc>12)){$('stLat').value='';$('stLon').value='';updateGpsVisual('', '', acc);toast('Precisión insuficiente: se necesitan 12 m o menos.');return}
     $('stLat').value=lat;$('stLon').value=lon;updateGpsVisual(lat,lon,acc);
-    toast(Number.isFinite(acc)&&acc>12?'Ubicación aproximada registrada para pruebas':'Ubicación registrada')
-  },e=>{updateGpsVisual($('stLat').value,$('stLon').value,$('stAcc').value);toast('Sin GPS: '+e.message+'. Puedes continuar en modo pruebas.')},{enableHighAccuracy:true,timeout:20000,maximumAge:0});
+    toast(Number.isFinite(acc)&&acc>12?'Ubicación aproximada registrada. Se recomienda precisión de 12 m o menos.':'Ubicación registrada')
+  },e=>{updateGpsVisual($('stLat').value,$('stLon').value,$('stAcc').value);toast('Sin GPS: '+e.message+'. Puedes actualizar las coordenadas en terreno.')},{enableHighAccuracy:true,timeout:20000,maximumAge:0});
 };
 async function compressImage(file,maxW=1280,quality=.76){return new Promise(res=>{const img=new Image(),fr=new FileReader();fr.onload=()=>{img.onload=()=>{let w=img.width,h=img.height;if(w>maxW){h=Math.round(h*maxW/w);w=maxW}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res({name:file.name||'foto.jpg',type:'image/jpeg',dataURL:c.toDataURL('image/jpeg',quality)})};img.onerror=()=>res(null);img.src=fr.result};fr.onerror=()=>res(null);fr.readAsDataURL(file)})}
 $('stPhotos').onchange=async e=>{const files=[...e.target.files];if(selectedPhotos.length+files.length>PHOTO_MAX){toast('Máximo 7 fotos por estructura');e.target.value='';return}for(const f of files){const p=await compressImage(f);if(p)selectedPhotos.push(p)}renderPhotos();e.target.value=''};
@@ -933,7 +933,7 @@ async function renderStructureDetail(){const s=await get('structures',activeStru
   navigator.geolocation.getCurrentPosition(async position=>{
     const lat=position.coords.latitude,lon=position.coords.longitude,accuracy=position.coords.accuracy;
     if(REQUIRE_GPS_12M&&(!Number.isFinite(accuracy)||accuracy>12)){toast('Precisión superior a 12 m. Repite en terreno.');button.disabled=false;button.textContent='⌖ Coordenadas';return}
-    const current=await get('structures',s.id);if(current){current.lat=lat.toFixed(7);current.lon=lon.toFixed(7);current.accuracy=Number.isFinite(accuracy)?accuracy.toFixed(1):'';current.gpsPending=!Number.isFinite(accuracy)||accuracy>12;current.updatedAt=nowIso();await put('structures',current);await touchOrder(s.orderId);await renderStructureDetail();await dashboard();toast(current.gpsPending?'GPS aproximado guardado solo para pruebas':'GPS de la estructura actualizado')}
+    const current=await get('structures',s.id);if(current){current.lat=lat.toFixed(7);current.lon=lon.toFixed(7);current.accuracy=Number.isFinite(accuracy)?accuracy.toFixed(1):'';current.gpsPending=!Number.isFinite(accuracy)||accuracy>12;current.updatedAt=nowIso();await put('structures',current);await touchOrder(s.orderId);await renderStructureDetail();await dashboard();toast(current.gpsPending?'GPS aproximado guardado. Se recomienda precisión de 12 m o menos.':'GPS de la estructura actualizado')}
   },error=>{button.disabled=false;button.textContent='⌖ Coordenadas';toast('Sin actualización GPS: '+error.message)},{enableHighAccuracy:true,timeout:20000,maximumAge:0});
 };qsa('[data-del-lum]').forEach(b=>b.onclick=async()=>{await del('luminaires',b.dataset.delLum);await touchOrder(s.orderId);await renderStructureDetail();await dashboard();toast('Luminaria eliminada')})}
 $('backFromDetail').onclick=()=>show('orders');
