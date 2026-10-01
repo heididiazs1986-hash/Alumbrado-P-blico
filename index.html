@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#FEFEFF" />
-<title>AP Inventory v0.8.11</title>
+<title>AP Inventory v0.8.12</title>
 <link rel="manifest" href="manifest.json" />
 <script src="app-config.js"></script>
 <style>
@@ -458,8 +458,8 @@ body,.field input,.field textarea,.field select{font-weight:400}
 .form-actions .primary-btn{background:#FF6600;color:#fff}
 @media(max-width:420px){.form-actions{grid-template-columns:minmax(0,1fr) minmax(0,1.7fr)}}
 </style>
-<link rel="stylesheet" href="ui-refinement.css?v=0811" />
-<link rel="stylesheet" href="ap-extended.css?v=0811" />
+<link rel="stylesheet" href="ui-refinement.css?v=0812" />
+<link rel="stylesheet" href="ap-extended.css?v=0812" />
 </head>
 <body>
 <header class="appbar">
@@ -911,14 +911,14 @@ $('btnSaveStructure').onclick=async()=>{const o=await get('orders',activeOrderId
 async function renderStructureDetail(){const s=await get('structures',activeStructureId);if(!s)return;const lums=(await all('luminaires')).filter(x=>x.structureId===s.id);const sState=s.finalState||(structureBad(s)?'CON NOVEDAD':'SIN NOVEDAD'),sSec=s.securityCondition||'SIN CONDICIÓN CRÍTICA';$('structureSummary').innerHTML=`<div class="section-title"><span class="dot"></span>Estructura</div><b>${esc(s.cd)} · ${esc(s.node)}</b><div class="order-meta">Orden ${esc(s.order)} · ${esc(s.class)} · ${esc(s.material)} · ${esc(s.characteristics)}${s.capacityKva?' · '+esc(s.capacityKva)+' kVA':''}${s.network?' · '+esc(s.network):''}</div><div class="order-meta">📍 ${s.lat&&s.lon?esc(s.lat)+', '+esc(s.lon):'GPS PENDIENTE'}${s.accuracy?' · precisión '+esc(s.accuracy)+' m':''} · ${s.photos?.length||0} foto(s)${s.gpsPending?' · REVISAR GPS':''}</div><button class="reference-btn" type="button" id="btnFixStructureGps">⌖ Coordenadas</button><div class="notice blue mt8"><b>Estado estructura:</b> ${esc(sState)} · <b>Seguridad:</b> ${esc(sSec)}</div>${s.findings?.length?`<div class="notice blue mt8">${esc(s.findings.join(' · '))}</div>`:''}`;if(upper(s.class)==='CD'){
  const field=document.createElement('div');
  field.className='field mt8';
- field.innerHTML='<label for="detailCdCapacity">Capacidad del transformador (kVA)</label><select id="detailCdCapacity">'+capacityOptionsHtml(s.capacityKva)+'</select><button class="secondary-btn mt8" type="button" id="btnSaveCdCapacity">Guardar kVA</button>';
+ field.innerHTML='<label for="detailCdCapacity">Capacidad del transformador (kVA)</label><select id="detailCdCapacity">'+capacityOptionsHtml(s.capacityKva)+'</select>';
  $('structureSummary').append(field);
- $('btnSaveCdCapacity').onclick=async()=>{
+ $('detailCdCapacity').onchange=async()=>{
   const value=$('detailCdCapacity').value;
   if(!TRANSFORMER_KVA.includes(value)){toast('Selecciona una capacidad');return}
   const related=(await all('structures')).filter(x=>x.orderId===s.orderId&&normalizeCdValue(x.cd)===normalizeCdValue(s.cd));
   for(const item of related){item.capacityKva=Number(value);item.updatedAt=nowIso();await put('structures',item)}
-  await touchOrder(s.orderId);await renderStructureDetail();await dashboard();toast('Capacidad actualizada para el CD y sus nodos');
+  await touchOrder(s.orderId);await renderStructureDetail();await dashboard();toast('Capacidad actualizada');
  };
 }$('lumCount').textContent=`(${lums.length})`;$('lumList').innerHTML=lums.length?lums.map((l,i)=>`<div class="lum-card"><div class="lum-head"><b>Luminaria ${i+1}</b><span class="chip ${String(l.technology).toLowerCase()==='led'?'led':String(l.technology).includes('SODIO')?'sodio':''}">${esc(l.technology)}</span><button class="tiny-btn" data-del-lum="${l.id}">Eliminar</button></div><div class="lum-grid"><span>Rótulo: <b>${esc(l.serial)}</b></span><span>Potencia: <b>${esc(l.power)} W</b></span><span>Brazo: <b>${esc(l.armLength??s.armLength??'PENDIENTE')} m</b></span><span>Alimentación: <b>${esc(l.supply)}</b></span><span>Control: <b>${esc(l.control)}</b></span><span>Estado funcional: <b>${esc(l.finalState||'OPERATIVA')}</b></span><span>Seguridad: <b>${esc(l.securityCondition||'SIN CONDICIÓN CRÍTICA')}</b></span></div>${l.findings?.length?`<div class="notice blue mt8">${esc(l.findings.join(' · '))}</div>`:''}</div>`).join(''):'<div class="muted small">Aún no hay luminarias en esta estructura.</div>';$('btnFixStructureGps').onclick=async()=>{
   if(!navigator.geolocation){toast('GPS no disponible: actualiza desde el dispositivo en terreno');return}
@@ -1124,7 +1124,7 @@ document.addEventListener('blur',e=>forceOperationalUppercase(e.target),true);
 if('serviceWorker'  in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 (async()=>{await openDb();await migrateLegacyLumLabels();populateLoginUsers();buildStructureFindings();setStructureNovelty('NO');buildLumFindings();setLumNovelty('NO');await dashboard();await ensureUserSession();})();
 </script>
-<script src="ui-refinement.js?v=0811"></script>
-<script src="ap-extended.js?v=0811"></script>
+<script src="ui-refinement.js?v=0812"></script>
+<script src="ap-extended.js?v=0812"></script>
 </body>
 </html>
