@@ -4,5 +4,6 @@
  * En modo pruebas puede permanecer vacío (recuperación deshabilitada).
  */
 window.AP_APP_CONFIG = {
-  masterPinHash: ''
+  masterPinHash: '',
+  syncUploadUrl: 'https://applusglobal.sharepoint.com/:f:/s/GestinSocial/alumbradopublico/IgB_Nb1VNehESrjzIweoy1NcAVF2otsPPDm6kNTwV_NiYLY?e=caVWKt'
 };
