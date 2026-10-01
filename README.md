@@ -97,3 +97,9 @@ La hoja **ESTRUCTURAS** agrega la columna `CAPACIDAD_TRANSFORMADOR_KVA`. El KMZ 
 - Se elimina la confirmación manual del técnico.
 - El botón de salida queda como “Cargar” y abre directamente la carpeta institucional de recepción.
 - La verificación real de recepción queda prevista para Power Automate.
+
+
+## v0.8.15
+- Corrección del tipo MIME del Excel exportado.
+- El registro diario ahora descarga como .xlsx, no .xlsx.zip.
+- Se mantiene el contenido OOXML y las tablas tbl_Estructuras y tbl_Luminarias para Power Automate.
