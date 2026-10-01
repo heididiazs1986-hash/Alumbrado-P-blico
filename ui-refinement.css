@@ -1,4 +1,4 @@
-/* AP Inventory v0.8.11 · interfaz ligera */
+/* AP Inventory v0.8.14 · interfaz ligera */
 :root{--primary:#FF6600;--secondary:#C1C7CE;--tertiary:#79D1FF;--neutral:#FEFEFF}
 #activeOrderNotice{padding:11px 13px!important;line-height:1.45;font-size:.84rem;font-weight:400;background:#E8F7FF!important;border:1px solid #B5E7FC!important;color:#1D526D!important}
 #activeOrderNotice strong{font-weight:650;color:#183A51}
@@ -49,3 +49,7 @@
 #screenSync .sync-actions .action .ico{background:#E8F7FF;color:#217093;font-size:1.2rem}
 .theme-switch{min-width:76px!important;width:auto!important;padding:0 10px!important;border-radius:999px!important;font-size:.82rem!important;font-weight:650!important}
 @media(max-width:370px){#screenSync .sync-actions{grid-template-columns:1fr}.theme-switch{min-width:42px!important;padding:0 8px!important;font-size:0!important}.theme-switch::first-letter{font-size:1rem}}
+
+/* v0.8.14 · carga directa a recepción */
+#screenSync .sync-buttons.one{grid-template-columns:1fr}
+#screenSync #btnOpenSync{min-height:50px}
