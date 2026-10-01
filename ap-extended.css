@@ -1,4 +1,4 @@
-/* AP Inventory v0.8.11 · matriz de hallazgos, turno nocturno y entrega */
+/* AP Inventory v0.8.18 · matriz de hallazgos, turno nocturno y entrega */
 .theme-switch{height:37px;min-width:76px;padding:0 10px;border-radius:999px;border:1px solid #A7DFF8;background:#E6F7FF;color:#236B87;font-size:.82rem;font-weight:650;cursor:pointer;display:grid;place-items:center;margin-left:auto}
 #stCd~.hint,#cdFirstHint,#gpsTestNotice,#lmLabelHint,#lmTech+.hint{display:none!important}
 .matrix-group{border-bottom:1px solid #E7F0F4}.matrix-group:last-child{border:0}
@@ -133,3 +133,6 @@ html[data-theme="dark"] #stFindingsWrap .matrix-group .finding-item:has(input:ch
 html[data-theme="dark"] #lmFindingsWrap .matrix-group .finding-item:has(input:checked) span {
   color: #E4F7FF !important;
 }
+
+/* v0.8.18 · selector de tema solo con icono */
+.theme-switch{width:38px!important;min-width:38px!important;height:38px!important;padding:0!important;border-radius:50%!important;font-size:1.15rem!important;line-height:1!important}
