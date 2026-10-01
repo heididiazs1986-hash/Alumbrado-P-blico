@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#FEFEFF" />
-<title>AP Inventory v0.8.19</title>
+<title>AP Inventory v0.8.20</title>
 <link rel="manifest" href="manifest.json" />
 <script src="app-config.js"></script>
 <style>
@@ -957,13 +957,23 @@ $('btnSaveStructure').onclick=async()=>{
   if(upper(stClass)!=='CD'&&!others.some(x=>upper(x.class)==='CD'&&normalizeCdValue(x.cd)===cd)){toast(`Debe existir la estructura CD ${cd} antes de guardar este nodo`);return}
   if(upper(stClass)==='CD'&&others.some(x=>upper(x.class)==='CD'&&normalizeCdValue(x.cd)===cd)){toast(`Ya existe la estructura del CD ${cd}; registra los siguientes nodos como MT o BT`);return}
   if(ss.some(x=>x.id!==editingStructureId&&x.orderId===activeOrderId&&normalizeCdValue(x.cd)===cd&&upper(x.node)===node)){toast('Esta estructura ya existe dentro de la orden');return}
+  const oldCdDependents=current&&upper(current.class)==='CD'?others.filter(x=>normalizeCdValue(x.cd)===normalizeCdValue(current.cd)):[];
+  if(current&&upper(current.class)==='CD'&&upper(stClass)!=='CD'&&oldCdDependents.length){toast('No puedes cambiar este CD a MT o BT mientras tenga estructuras asociadas.');return}
   const capacityKva=stClass==='CD'?Number($('stCapacity').value):(Number(others.find(x=>upper(x.class)==='CD'&&normalizeCdValue(x.cd)===cd)?.capacityKva)||'');
   const id=current?.id||uid('EST');
   const obj={id,capacityKva,orderId:activeOrderId,order:upper(o.order),cd,node,class:upper(stClass),material,characteristics:char,network,lat,lon,accuracy:Number.isFinite(acc)?acc.toFixed(1):'',gpsPending:!lat||!lon||!Number.isFinite(acc)||acc>12,hasNovelty:stNovelty==='SI',findings:fs.map(f=>upper(f.label)),findingDetails:fs.map(f=>({id:f.id,category:apGroupStructure(f),description:upper(f.label)})),finalState,securityCondition,photos:selectedPhotos.map(p=>({...p})),observation:upper($('stObs').value),createdAt:current?.createdAt||nowIso(),updatedAt:nowIso(),syncStatus:'pending'};
   await put('structures',obj);
   if(current){
-    const children=(await all('luminaires')).filter(l=>l.structureId===id);
-    for(const l of children){l.orderId=obj.orderId;l.order=obj.order;l.cd=obj.cd;l.node=obj.node;l.updatedAt=nowIso();l.syncStatus='pending';await put('luminaires',l)}
+    const allLums=await all('luminaires');
+    if(upper(current.class)==='CD'&&upper(obj.class)==='CD'){
+      const oldCd=normalizeCdValue(current.cd);
+      const related=ss.filter(x=>x.id!==id&&x.orderId===obj.orderId&&normalizeCdValue(x.cd)===oldCd);
+      for(const item of related){
+        item.cd=obj.cd;item.capacityKva=obj.capacityKva;item.updatedAt=nowIso();item.syncStatus='pending';await put('structures',item);
+        for(const l of allLums.filter(x=>x.structureId===item.id)){l.cd=obj.cd;l.updatedAt=nowIso();l.syncStatus='pending';await put('luminaires',l)}
+      }
+    }
+    for(const l of allLums.filter(x=>x.structureId===id)){l.orderId=obj.orderId;l.order=obj.order;l.cd=obj.cd;l.node=obj.node;l.updatedAt=nowIso();l.syncStatus='pending';await put('luminaires',l)}
   }
   await touchOrder(activeOrderId);activeStructureId=id;editingStructureId=null;selectedPhotos=[];
   await renderStructureDetail();await dashboard();show('detail');toast(current?'Estructura actualizada':'Estructura guardada')
