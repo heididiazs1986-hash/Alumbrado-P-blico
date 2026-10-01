@@ -89,3 +89,11 @@ La hoja **ESTRUCTURAS** agrega la columna `CAPACIDAD_TRANSFORMADOR_KVA`. El KMZ 
 - Incluye fuga de aceite, daños visibles en transformador, puesta a tierra, DPS y cortacircuitos/portafusibles.
 - Estos hallazgos no aparecen para estructuras MT o BT.
 - La matriz Excel conserva grupo/categoría y descripción seleccionada.
+
+
+## v0.8.14
+- Destino fijo de recepción configurado en SharePoint.
+- Se elimina de la app el campo visible para pegar el vínculo de recepción.
+- Se elimina la confirmación manual del técnico.
+- El botón de salida queda como “Cargar” y abre directamente la carpeta institucional de recepción.
+- La verificación real de recepción queda prevista para Power Automate.
