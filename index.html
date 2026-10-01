@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#FEFEFF" />
-<title>AP Inventory v0.8.18</title>
+<title>AP Inventory v0.8.19</title>
 <link rel="manifest" href="manifest.json" />
 <script src="app-config.js"></script>
 <style>
@@ -499,7 +499,7 @@ body,.field input,.field textarea,.field select{font-weight:400}
   </section>
 
   <section class="screen" id="screenStructure">
-    <div class="toolbar"><button class="back" id="backFromStructure">←</button><h2>Nueva estructura AP</h2></div>
+    <div class="toolbar"><button class="back" id="backFromStructure">←</button><h2 id="structureFormTitle">Nueva estructura AP</h2></div>
     <div class="card flat"><div class="notice blue" id="activeOrderNotice">Selecciona una orden para comenzar.</div></div>
     <div class="card">
       <div class="section-title"><span class="dot"></span>Información general</div>
@@ -524,7 +524,7 @@ body,.field input,.field textarea,.field select{font-weight:400}
         </div>
         <div class="gps-mini-map" aria-label="Vista de precisión de la ubicación GPS">
           <div class="gps-accuracy-ring" id="gpsAccuracyRing"><span class="gps-center-dot"></span></div>
-          <div class="gps-map-note" id="gpsMapNote">GPS EN PRUEBAS</div>
+          <div class="gps-map-note" id="gpsMapNote">PRECISIÓN RECOMENDADA ≤ 12 M</div>
         </div>
       </div>
       <div class="gps-row"><div class="field"><label>Latitud</label><input id="stLat" readonly placeholder="GPS" /></div><div class="field"><label>Longitud</label><input id="stLon" readonly placeholder="GPS" /></div></div>
@@ -579,7 +579,7 @@ body,.field input,.field textarea,.field select{font-weight:400}
 
 <nav class="bottomnav"><button class="navbtn active" data-go="home"><b>⌂</b>Inicio</button><button class="navbtn" data-go="orders"><b>▤</b>Órdenes</button><button class="navbtn" data-go="export"><b>⇧</b>Exportar</button><button class="navbtn" data-go="sync"><b>☁</b>Sync</button></nav>
 
-<div class="modal" id="lumModal"><div class="sheet"><button class="closex" data-close="lumModal">✕</button><h3>Agregar luminaria</h3><div class="grid two">
+<div class="modal" id="lumModal"><div class="sheet"><button class="closex" data-close="lumModal">✕</button><h3 id="lumModalTitle">Agregar luminaria</h3><div class="grid two">
   <div class="field"><label for="lmSerial">Rótulo / Serial *</label><input id="lmSerial" required aria-required="true" placeholder="Ej. AP-034-01, ILEGIBLE o NO MARCADO" autocomplete="off" /><div class="hint" id="lmLabelHint">Campo obligatorio: escribe el rótulo real o una condición como ILEGIBLE o NO MARCADO. Las condiciones sin rótulo válido se numeran automáticamente por orden y CD.</div></div>
   <div class="field"><label>Tecnología *</label><select id="lmTech"><option value="">Selecciona…</option><option>LED</option><option>SODIO ALTA PRESIÓN</option><option>SODIO BAJA PRESIÓN</option><option>VAPOR DE MERCURIO</option><option>HALOGENURO METÁLICO</option><option>FLUORESCENTE</option><option>HALÓGENA</option><option>INCANDESCENTE</option><option>INDUCCIÓN ELECTROMAGNÉTICA</option></select><div class="hint">Al elegir una tecnología verás su fotografía de referencia.</div><div class="tech-help hidden" id="lmTechHelp" aria-live="polite"></div><button class="reference-btn" type="button" id="btnTechGallery">Ver fotografías de tecnologías</button></div>
   <div class="field"><label>Tipo de luminaria *</label><select id="lmType"><option value="">Selecciona…</option><option>VIAL</option><option>REFLECTOR / PROYECTOR</option><option>DECORATIVA</option><option>PEATONAL</option><option>SOLAR / FOTOVOLTAICA</option><option>ORNAMENTAL</option></select><div class="tech-help hidden" id="lmTypeHelp" aria-live="polite"></div><button class="reference-btn" type="button" id="btnTypeGallery">Ver esquemas de tipos de luminaria</button></div>
@@ -620,7 +620,7 @@ const qsa=s=>[...document.querySelectorAll(s)];
 const DB_NAME='APInventoryDB', DB_VER=1;
 const REQUIRE_GPS_12M=false; // Validación GPS temporalmente no bloqueante.
 const PHOTO_MIN=3, PHOTO_MAX=7, MAX_LUMINAIRES_PER_ORDER=10;
-let db=null, activeOrderId=null, activeStructureId=null, orderFilter='all', stClass='CD', selectedPhotos=[], selectedLumPhotos=[];
+let db=null, activeOrderId=null, activeStructureId=null, editingStructureId=null, editingLumId=null, orderFilter='all', stClass='CD', selectedPhotos=[], selectedLumPhotos=[];
 const STRUCTURE_FINDINGS_CD=[
 {id:'CD_OIL_LEAK',label:'FUGA VISIBLE DE ACEITE DEL TRANSFORMADOR',technical:2,safety:1},
 {id:'CD_TANK_CORROSION',label:'CUBA DEL TRANSFORMADOR CON CORROSIÓN VISIBLE',technical:1,safety:1},
@@ -819,7 +819,32 @@ function updateGpsVisual(lat='',lon='',acc=null){
   const px=hasAccuracy?Math.max(42,Math.min(108,36+a*5)):72;ring.style.width=px+'px';ring.style.height=px+'px';
   note.textContent=hasAccuracy?`PRECISIÓN ${a.toFixed(1)} M`:'PRECISIÓN RECOMENDADA ≤ 12 M';
 }
-function resetStructure(){activeStructureId=null;selectedPhotos=[];$('stCd').value='';$('stCapacity').value='';$('stNode').value='';$('stMaterial').value='';$('stChar').innerHTML='<option value="">Selecciona tipo y material…</option>';$('stNetwork').value='';$('stLat').value='';$('stLon').value='';$('stAcc').value='';$('stObs').value='';setClass('CD');stNovelty='NO';buildStructureFindings();setStructureNovelty('NO');renderPhotos();updateGpsVisual()}
+function resetStructure(){
+  editingStructureId=null;activeStructureId=null;selectedPhotos=[];
+  $('stCd').value='';$('stCapacity').value='';$('stNode').value='';$('stMaterial').value='';
+  $('stChar').innerHTML='<option value="">Selecciona tipo y material…</option>';$('stNetwork').value='';
+  $('stLat').value='';$('stLon').value='';$('stAcc').value='';$('stObs').value='';
+  $('structureFormTitle').textContent='Nueva estructura AP';$('btnSaveStructure').textContent='Guardar estructura';
+  setClass('CD');stNovelty='NO';buildStructureFindings();setStructureNovelty('NO');renderPhotos();updateGpsVisual()
+}
+async function editStructure(id){
+  const s=await get('structures',id);if(!s)return;
+  editingStructureId=s.id;activeStructureId=s.id;activeOrderId=s.orderId;returnStructureDetailId=s.id;
+  $('structureFormTitle').textContent='Editar estructura AP';$('btnSaveStructure').textContent='Actualizar estructura';
+  $('stCd').value=s.cd||'';$('stNode').value=s.node||'';$('stMaterial').value=s.material||'';
+  stClass=upper(s.class||'CD');qsa('#classSeg button').forEach(b=>b.classList.toggle('active',b.dataset.v===stClass));
+  $('stCapacityWrap').classList.toggle('hidden',stClass!=='CD');fillChars();
+  $('stChar').value=s.characteristics||'';$('stNetwork').value=s.network||'';$('stCapacity').value=s.capacityKva?String(s.capacityKva):'';
+  $('stLat').value=s.lat||'';$('stLon').value=s.lon||'';$('stAcc').value=s.accuracy||'';$('stObs').value=s.observation||'';
+  selectedPhotos=Array.isArray(s.photos)?s.photos.map(p=>({...p})):[];
+  buildStructureFindings();
+  const wantedIds=new Set((s.findingDetails||[]).map(x=>x.id).filter(Boolean));
+  const wantedLabels=new Set((s.findings||[]).map(upper));
+  setStructureNovelty(s.hasNovelty||wantedIds.size||wantedLabels.size?'SI':'NO');
+  qsa('#stFindings input').forEach(ch=>{const row=ch.closest('.finding-item');const label=upper(row?.innerText||'');ch.checked=wantedIds.has(ch.value)||wantedLabels.has(label);if(row){row.classList.toggle('is-selected',ch.checked);row.setAttribute('aria-selected',String(ch.checked))}});
+  updateStructureCalculatedState();renderPhotos();updateGpsVisual(s.lat||'',s.lon||'',s.accuracy??null);
+  await renderStructureForm();show('structure')
+}
 // Cancelar descarta solo el borrador; nunca borra estructuras ya guardadas.
 function hasStructureDraft(){
   return Boolean(
@@ -911,31 +936,68 @@ $('btnGps').onclick=()=>{
 };
 async function compressImage(file,maxW=1280,quality=.76){return new Promise(res=>{const img=new Image(),fr=new FileReader();fr.onload=()=>{img.onload=()=>{let w=img.width,h=img.height;if(w>maxW){h=Math.round(h*maxW/w);w=maxW}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res({name:file.name||'foto.jpg',type:'image/jpeg',dataURL:c.toDataURL('image/jpeg',quality)})};img.onerror=()=>res(null);img.src=fr.result};fr.onerror=()=>res(null);fr.readAsDataURL(file)})}
 $('stPhotos').onchange=async e=>{const files=[...e.target.files];if(selectedPhotos.length+files.length>PHOTO_MAX){toast('Máximo 7 fotos por estructura');e.target.value='';return}for(const f of files){const p=await compressImage(f);if(p)selectedPhotos.push(p)}renderPhotos();e.target.value=''};
-function renderPhotos(){const maxed=selectedPhotos.length>=PHOTO_MAX;$('photoCount').textContent=`${selectedPhotos.length} / ${PHOTO_MAX} · mínimo ${PHOTO_MIN}`;$('photoGrid').innerHTML=selectedPhotos.map((p,i)=>`<div class="photo" data-i="${i}"><img src="${p.dataURL}" alt="Foto ${i+1}"></div>`).join('')+`<label class="photo add ${maxed?'disabled':''}" for="stPhotos">📁<br>${maxed?'Máximo alcanzado':'Cargar fotos'}</label>`}
-$('btnSaveStructure').onclick=async()=>{const o=await get('orders',activeOrderId);if(!o)return;const cd=normalizeCdValue($('stCd').value),node=upper($('stNode').value),material=upper($('stMaterial').value),char=upper($('stChar').value),network=upper($('stNetwork').value),lat=$('stLat').value,lon=$('stLon').value,acc=$('stAcc').value.trim()===''?null:Number($('stAcc').value),fs=selectedStructureFindingObjects(),finalState=calculateStructureState(fs),securityCondition=calculateSecurity(fs);$('stCd').value=cd;if(!cd||!node||!material||!char||!network){toast('Completa todos los campos de la estructura');return}if(stClass==='CD'&&!TRANSFORMER_KVA.includes($('stCapacity').value)){toast('Selecciona la capacidad del transformador');$('stCapacity').focus();return}if(REQUIRE_GPS_12M&&(!lat||!lon||!Number.isFinite(acc)||acc>12)){toast('Captura coordenadas con precisión máxima de 12 m');return}if(stNovelty==='SI'&&!fs.length){toast('Selecciona al menos una novedad de la estructura');return}if(selectedPhotos.length<PHOTO_MIN||selectedPhotos.length>PHOTO_MAX){toast('Carga entre 3 y 7 fotografías de la estructura');return}const ss=await all('structures');const sameOrder=ss.filter(x=>x.orderId===activeOrderId);const hasCd=sameOrder.some(x=>upper(x.class)==='CD');if(!sameOrder.length&&upper(stClass)!=='CD'){toast('La primera estructura de la orden debe registrarse como CD');return}if(sameOrder.length&&!hasCd&&upper(stClass)!=='CD'){toast('Primero debes registrar la estructura CD de la orden');return}if(upper(stClass)!=='CD'&&!sameOrder.some(x=>upper(x.class)==='CD'&&normalizeCdValue(x.cd)===cd)){toast(`Primero debes registrar la estructura CD ${cd}`);return}if(upper(stClass)==='CD'&&sameOrder.some(x=>upper(x.class)==='CD'&&normalizeCdValue(x.cd)===cd)){toast(`Ya existe la estructura del CD ${cd}; registra los siguientes nodos como MT o BT`);return}if(ss.some(x=>x.orderId===activeOrderId&&normalizeCdValue(x.cd)===cd&&upper(x.node)===node)){toast('Esta estructura ya existe dentro de la orden');return}const capacityKva=stClass==='CD'?Number($('stCapacity').value):(Number(sameOrder.find(x=>upper(x.class)==='CD'&&normalizeCdValue(x.cd)===cd)?.capacityKva)||'');const id=uid('EST');const obj={id,capacityKva,orderId:activeOrderId,order:upper(o.order),cd,node,class:upper(stClass),material,characteristics:char,network,lat,lon,accuracy:Number.isFinite(acc)?acc.toFixed(1):'',gpsPending:!lat||!lon||!Number.isFinite(acc)||acc>12,hasNovelty:stNovelty==='SI',findings:fs.map(f=>upper(f.label)),findingDetails:fs.map(f=>({id:f.id,category:apGroupStructure(f),description:upper(f.label)})),finalState,securityCondition,photos:selectedPhotos,observation:upper($('stObs').value),createdAt:nowIso(),updatedAt:nowIso(),syncStatus:'pending'};await put('structures',obj);await touchOrder(activeOrderId);activeStructureId=id;selectedPhotos=[];await renderStructureDetail();await dashboard();show('detail');toast('Estructura guardada')};
+function renderPhotos(){
+  const maxed=selectedPhotos.length>=PHOTO_MAX;
+  $('photoCount').textContent=`${selectedPhotos.length} / ${PHOTO_MAX} · mínimo ${PHOTO_MIN}`;
+  $('photoGrid').innerHTML=selectedPhotos.map((p,i)=>`<div class="photo" data-i="${i}"><img src="${p.dataURL}" alt="Foto ${i+1}"><button type="button" class="photo-remove" data-remove-photo="${i}" aria-label="Quitar foto">×</button></div>`).join('')+`<label class="photo add ${maxed?'disabled':''}" for="stPhotos">📁<br>${maxed?'Máximo alcanzado':'Cargar fotos'}</label>`;
+  qsa('#photoGrid [data-remove-photo]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();selectedPhotos.splice(Number(b.dataset.removePhoto),1);renderPhotos()})
+}
+$('btnSaveStructure').onclick=async()=>{
+  const o=await get('orders',activeOrderId);if(!o)return;
+  const current=editingStructureId?await get('structures',editingStructureId):null;
+  const cd=normalizeCdValue($('stCd').value),node=upper($('stNode').value),material=upper($('stMaterial').value),char=upper($('stChar').value),network=upper($('stNetwork').value),lat=$('stLat').value,lon=$('stLon').value,acc=$('stAcc').value.trim()===''?null:Number($('stAcc').value),fs=selectedStructureFindingObjects(),finalState=calculateStructureState(fs),securityCondition=calculateSecurity(fs);
+  $('stCd').value=cd;
+  if(!cd||!node||!material||!char||!network){toast('Completa todos los campos de la estructura');return}
+  if(stClass==='CD'&&!TRANSFORMER_KVA.includes($('stCapacity').value)){toast('Selecciona la capacidad del transformador');$('stCapacity').focus();return}
+  if(REQUIRE_GPS_12M&&(!lat||!lon||!Number.isFinite(acc)||acc>12)){toast('Captura coordenadas con precisión máxima de 12 m');return}
+  if(stNovelty==='SI'&&!fs.length){toast('Selecciona al menos una novedad de la estructura');return}
+  if(selectedPhotos.length<PHOTO_MIN||selectedPhotos.length>PHOTO_MAX){toast('Carga entre 3 y 7 fotografías de la estructura');return}
+  const ss=await all('structures'),sameOrder=ss.filter(x=>x.orderId===activeOrderId),others=sameOrder.filter(x=>x.id!==editingStructureId);
+  if(!current&&!sameOrder.length&&upper(stClass)!=='CD'){toast('La primera estructura de la orden debe registrarse como CD');return}
+  if(upper(stClass)!=='CD'&&!others.some(x=>upper(x.class)==='CD'&&normalizeCdValue(x.cd)===cd)){toast(`Debe existir la estructura CD ${cd} antes de guardar este nodo`);return}
+  if(upper(stClass)==='CD'&&others.some(x=>upper(x.class)==='CD'&&normalizeCdValue(x.cd)===cd)){toast(`Ya existe la estructura del CD ${cd}; registra los siguientes nodos como MT o BT`);return}
+  if(ss.some(x=>x.id!==editingStructureId&&x.orderId===activeOrderId&&normalizeCdValue(x.cd)===cd&&upper(x.node)===node)){toast('Esta estructura ya existe dentro de la orden');return}
+  const capacityKva=stClass==='CD'?Number($('stCapacity').value):(Number(others.find(x=>upper(x.class)==='CD'&&normalizeCdValue(x.cd)===cd)?.capacityKva)||'');
+  const id=current?.id||uid('EST');
+  const obj={id,capacityKva,orderId:activeOrderId,order:upper(o.order),cd,node,class:upper(stClass),material,characteristics:char,network,lat,lon,accuracy:Number.isFinite(acc)?acc.toFixed(1):'',gpsPending:!lat||!lon||!Number.isFinite(acc)||acc>12,hasNovelty:stNovelty==='SI',findings:fs.map(f=>upper(f.label)),findingDetails:fs.map(f=>({id:f.id,category:apGroupStructure(f),description:upper(f.label)})),finalState,securityCondition,photos:selectedPhotos.map(p=>({...p})),observation:upper($('stObs').value),createdAt:current?.createdAt||nowIso(),updatedAt:nowIso(),syncStatus:'pending'};
+  await put('structures',obj);
+  if(current){
+    const children=(await all('luminaires')).filter(l=>l.structureId===id);
+    for(const l of children){l.orderId=obj.orderId;l.order=obj.order;l.cd=obj.cd;l.node=obj.node;l.updatedAt=nowIso();l.syncStatus='pending';await put('luminaires',l)}
+  }
+  await touchOrder(activeOrderId);activeStructureId=id;editingStructureId=null;selectedPhotos=[];
+  await renderStructureDetail();await dashboard();show('detail');toast(current?'Estructura actualizada':'Estructura guardada')
+};
 
 
-async function renderStructureDetail(){const s=await get('structures',activeStructureId);if(!s)return;const lums=(await all('luminaires')).filter(x=>x.structureId===s.id);const sState=s.finalState||(structureBad(s)?'CON NOVEDAD':'SIN NOVEDAD'),sSec=s.securityCondition||'SIN CONDICIÓN CRÍTICA';$('structureSummary').innerHTML=`<div class="section-title"><span class="dot"></span>Estructura</div><b>${esc(s.cd)} · ${esc(s.node)}</b><div class="order-meta">Orden ${esc(s.order)} · ${esc(s.class)} · ${esc(s.material)} · ${esc(s.characteristics)}${s.capacityKva?' · '+esc(s.capacityKva)+' kVA':''}${s.network?' · '+esc(s.network):''}</div><div class="order-meta">📍 ${s.lat&&s.lon?esc(s.lat)+', '+esc(s.lon):'GPS PENDIENTE'}${s.accuracy?' · precisión '+esc(s.accuracy)+' m':''} · ${s.photos?.length||0} foto(s)${s.gpsPending?' · REVISAR GPS':''}</div><button class="reference-btn" type="button" id="btnFixStructureGps">⌖ Coordenadas</button><div class="notice blue mt8"><b>Estado estructura:</b> ${esc(sState)} · <b>Seguridad:</b> ${esc(sSec)}</div>${s.findings?.length?`<div class="notice blue mt8">${esc(s.findings.join(' · '))}</div>`:''}`;if(upper(s.class)==='CD'){
- const field=document.createElement('div');
- field.className='field mt8';
- field.innerHTML='<label for="detailCdCapacity">Capacidad del transformador (kVA)</label><select id="detailCdCapacity">'+capacityOptionsHtml(s.capacityKva)+'</select>';
- $('structureSummary').append(field);
- $('detailCdCapacity').onchange=async()=>{
-  const value=$('detailCdCapacity').value;
-  if(!TRANSFORMER_KVA.includes(value)){toast('Selecciona una capacidad');return}
-  const related=(await all('structures')).filter(x=>x.orderId===s.orderId&&normalizeCdValue(x.cd)===normalizeCdValue(s.cd));
-  for(const item of related){item.capacityKva=Number(value);item.updatedAt=nowIso();await put('structures',item)}
-  await touchOrder(s.orderId);await renderStructureDetail();await dashboard();toast('Capacidad actualizada');
- };
-}$('lumCount').textContent=`(${lums.length})`;$('lumList').innerHTML=lums.length?lums.map((l,i)=>`<div class="lum-card"><div class="lum-head"><b>Luminaria ${i+1}</b><span class="chip ${String(l.technology).toLowerCase()==='led'?'led':String(l.technology).includes('SODIO')?'sodio':''}">${esc(l.technology)}</span><button class="tiny-btn" data-del-lum="${l.id}">Eliminar</button></div><div class="lum-grid"><span>Rótulo: <b>${esc(l.serial)}</b></span><span>Potencia: <b>${esc(l.power)} W</b></span><span>Brazo: <b>${esc(l.armLength??s.armLength??'PENDIENTE')} m</b></span><span>Alimentación: <b>${esc(l.supply)}</b></span><span>Control: <b>${esc(l.control)}</b></span><span>Estado funcional: <b>${esc(l.finalState||'OPERATIVA')}</b></span><span>Seguridad: <b>${esc(l.securityCondition||'SIN CONDICIÓN CRÍTICA')}</b></span></div>${l.findings?.length?`<div class="notice blue mt8">${esc(l.findings.join(' · '))}</div>`:''}</div>`).join(''):'<div class="muted small">Aún no hay luminarias en esta estructura.</div>';const orderLumTotal=(await orderStats(s.orderId)).luminaires.length;$('btnAddLum').disabled=orderLumTotal>=MAX_LUMINAIRES_PER_ORDER;$('btnAddLum').textContent=orderLumTotal>=MAX_LUMINAIRES_PER_ORDER?`Límite alcanzado (${MAX_LUMINAIRES_PER_ORDER}/${MAX_LUMINAIRES_PER_ORDER})`:'+ Agregar luminaria';$('btnFixStructureGps').onclick=async()=>{
-  if(!navigator.geolocation){toast('GPS no disponible: actualiza desde el dispositivo en terreno');return}
-  const button=$('btnFixStructureGps');button.disabled=true;button.textContent='⌖ Capturando…';
-  navigator.geolocation.getCurrentPosition(async position=>{
-    const lat=position.coords.latitude,lon=position.coords.longitude,accuracy=position.coords.accuracy;
-    if(REQUIRE_GPS_12M&&(!Number.isFinite(accuracy)||accuracy>12)){toast('Precisión superior a 12 m. Repite en terreno.');button.disabled=false;button.textContent='⌖ Coordenadas';return}
-    const current=await get('structures',s.id);if(current){current.lat=lat.toFixed(7);current.lon=lon.toFixed(7);current.accuracy=Number.isFinite(accuracy)?accuracy.toFixed(1):'';current.gpsPending=!Number.isFinite(accuracy)||accuracy>12;current.updatedAt=nowIso();await put('structures',current);await touchOrder(s.orderId);await renderStructureDetail();await dashboard();toast(current.gpsPending?'GPS aproximado guardado. Se recomienda precisión de 12 m o menos.':'GPS de la estructura actualizado')}
-  },error=>{button.disabled=false;button.textContent='⌖ Coordenadas';toast('Sin actualización GPS: '+error.message)},{enableHighAccuracy:true,timeout:20000,maximumAge:0});
-};qsa('[data-del-lum]').forEach(b=>b.onclick=async()=>{await del('luminaires',b.dataset.delLum);await touchOrder(s.orderId);await renderStructureDetail();await dashboard();toast('Luminaria eliminada')})}
+
+async function renderStructureDetail(){
+  const s=await get('structures',activeStructureId);if(!s)return;
+  const lums=(await all('luminaires')).filter(x=>x.structureId===s.id);
+  const sState=s.finalState||(structureBad(s)?'CON NOVEDAD':'SIN NOVEDAD'),sSec=s.securityCondition||'SIN CONDICIÓN CRÍTICA';
+  $('structureSummary').innerHTML=`<div class="section-title"><span class="dot"></span>Estructura</div>
+    <b>${esc(s.cd)} · ${esc(s.node)}</b>
+    <div class="order-meta">Orden ${esc(s.order)} · ${esc(s.class)} · ${esc(s.material)} · ${esc(s.characteristics)}${s.capacityKva?' · '+esc(s.capacityKva)+' kVA':''}${s.network?' · '+esc(s.network):''}</div>
+    <div class="order-meta">📍 ${s.lat&&s.lon?esc(s.lat)+', '+esc(s.lon):'GPS PENDIENTE'}${s.accuracy?' · precisión '+esc(s.accuracy)+' m':''} · ${s.photos?.length||0} foto(s)${s.gpsPending?' · REVISAR GPS':''}</div>
+    <div class="detail-actions"><button class="reference-btn" type="button" id="btnEditStructure">✎ Editar estructura</button><button class="reference-btn" type="button" id="btnFixStructureGps">⌖ Coordenadas</button></div>
+    <div class="notice blue mt8"><b>Estado estructura:</b> ${esc(sState)} · <b>Seguridad:</b> ${esc(sSec)}</div>
+    ${s.findings?.length?`<div class="notice blue mt8">${esc(s.findings.join(' · '))}</div>`:''}`;
+  $('lumCount').textContent=`(${lums.length})`;
+  $('lumList').innerHTML=lums.length?lums.map((l,i)=>`<div class="lum-card"><div class="lum-head"><b>Luminaria ${i+1}</b><span class="chip ${String(l.technology).toLowerCase()==='led'?'led':String(l.technology).includes('SODIO')?'sodio':''}">${esc(l.technology)}</span><button class="tiny-btn" data-edit-lum="${l.id}">Editar</button><button class="tiny-btn" data-del-lum="${l.id}">Eliminar</button></div><div class="lum-grid"><span>Rótulo: <b>${esc(l.serial)}</b></span><span>Potencia: <b>${esc(l.power)} W</b></span><span>Brazo: <b>${esc(l.armLength??s.armLength??'PENDIENTE')} m</b></span><span>Alimentación: <b>${esc(l.supply)}</b></span><span>Control: <b>${esc(l.control)}</b></span><span>Estado funcional: <b>${esc(l.finalState||'OPERATIVA')}</b></span><span>Seguridad: <b>${esc(l.securityCondition||'SIN CONDICIÓN CRÍTICA')}</b></span></div>${l.findings?.length?`<div class="notice blue mt8">${esc(l.findings.join(' · '))}</div>`:''}</div>`).join(''):'<div class="muted small">Aún no hay luminarias en esta estructura.</div>';
+  $('btnEditStructure').onclick=()=>editStructure(s.id);
+  $('btnFixStructureGps').onclick=async()=>{
+    if(!navigator.geolocation){toast('GPS no disponible: actualiza desde el dispositivo en terreno');return}
+    const button=$('btnFixStructureGps');button.disabled=true;button.textContent='⌖ Capturando…';
+    navigator.geolocation.getCurrentPosition(async position=>{
+      const lat=position.coords.latitude,lon=position.coords.longitude,accuracy=position.coords.accuracy;
+      if(REQUIRE_GPS_12M&&(!Number.isFinite(accuracy)||accuracy>12)){toast('Precisión superior a 12 m. Repite en terreno.');button.disabled=false;button.textContent='⌖ Coordenadas';return}
+      const current=await get('structures',s.id);
+      if(current){current.lat=lat.toFixed(7);current.lon=lon.toFixed(7);current.accuracy=Number.isFinite(accuracy)?accuracy.toFixed(1):'';current.gpsPending=!Number.isFinite(accuracy)||accuracy>12;current.updatedAt=nowIso();current.syncStatus='pending';await put('structures',current);await touchOrder(s.orderId);await renderStructureDetail();await dashboard();toast(current.gpsPending?'GPS aproximado guardado. Se recomienda precisión de 12 m o menos.':'GPS de la estructura actualizado')}
+    },error=>{button.disabled=false;button.textContent='⌖ Coordenadas';toast('Sin actualización GPS: '+error.message)},{enableHighAccuracy:true,timeout:20000,maximumAge:0});
+  };
+  qsa('[data-edit-lum]').forEach(b=>b.onclick=()=>editLuminaire(b.dataset.editLum));
+  qsa('[data-del-lum]').forEach(b=>b.onclick=async()=>{await del('luminaires',b.dataset.delLum);await touchOrder(s.orderId);await renderStructureDetail();await dashboard();toast('Luminaria eliminada')})
+}
 $('backFromDetail').onclick=()=>show('orders');
 function currentLumFindingCatalog(){const tech=upper($('lmTech').value),supply=upper($('lmSupply').value),control=upper($('lmControl').value);let out=[...LUM_FINDINGS_COMMON];if(tech==='LED')out.push(...LUM_FINDINGS_LED);else if(tech&&tech!=='INDUCCIÓN ELECTROMAGNÉTICA')out.push(...LUM_FINDINGS_CONVENTIONAL);if(control==='FOTOCELDA')out.push(...LUM_FINDINGS_PHOTOCELL);if(supply==='FOTOVOLTAICA'||supply==='HÍBRIDA')out.push(...LUM_FINDINGS_SOLAR);return out}
 function buildLumFindings(){const box=$('lumFindings'),catalog=currentLumFindingCatalog(),previous=new Set(qsa('#lumFindings input:checked').map(x=>x.value));box.innerHTML=catalog.map(f=>`<label class="finding-item"><input type="checkbox" value="${f.id}" ${previous.has(f.id)?'checked':''}><span>${esc(f.label)}</span></label>`).join('');qsa('#lumFindings input').forEach(ch=>ch.addEventListener('change',updateLumCalculatedState));updateLumCalculatedState()}
@@ -946,44 +1008,68 @@ function updateLumCalculatedState(){const fs=selectedFindingObjects(),state=calc
 function setLumNovelty(v){lmNovelty=v;qsa('#lmNoveltySeg button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));$('lmFindingsWrap').classList.toggle('hidden',v!=='SI');if(v==='NO')qsa('#lumFindings input').forEach(x=>x.checked=false);updateLumCalculatedState()}
 qsa('#lmNoveltySeg button').forEach(b=>b.addEventListener('click',()=>setLumNovelty(b.dataset.v)));
 ['lmTech','lmSupply','lmControl'].forEach(id=>$(id).addEventListener('change',buildLumFindings));
-function renderLumPhotos(){const maxed=selectedLumPhotos.length>=PHOTO_MAX;$('lumPhotoCount').textContent=`${selectedLumPhotos.length} / ${PHOTO_MAX} · mínimo ${PHOTO_MIN}`;$('lumPhotoGrid').innerHTML=selectedLumPhotos.map((p,i)=>`<div class="photo"><img src="${p.dataURL}" alt="Foto ${i+1}"></div>`).join('')+`<label class="photo add ${maxed?'disabled':''}" for="lmPhotos">📁<br>${maxed?'Máximo alcanzado':'Cargar fotos'}</label>`}
+function renderLumPhotos(){
+  const maxed=selectedLumPhotos.length>=PHOTO_MAX;
+  $('lumPhotoCount').textContent=`${selectedLumPhotos.length} / ${PHOTO_MAX} · mínimo ${PHOTO_MIN}`;
+  $('lumPhotoGrid').innerHTML=selectedLumPhotos.map((p,i)=>`<div class="photo"><img src="${p.dataURL}" alt="Foto ${i+1}"><button type="button" class="photo-remove" data-remove-lum-photo="${i}" aria-label="Quitar foto">×</button></div>`).join('')+`<label class="photo add ${maxed?'disabled':''}" for="lmPhotos">📁<br>${maxed?'Máximo alcanzado':'Cargar fotos'}</label>`;
+  qsa('#lumPhotoGrid [data-remove-lum-photo]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();selectedLumPhotos.splice(Number(b.dataset.removeLumPhoto),1);renderLumPhotos()})
+}
 $('lmPhotos').onchange=async e=>{const files=[...e.target.files];if(selectedLumPhotos.length+files.length>PHOTO_MAX){toast('Máximo 7 fotos por luminaria');e.target.value='';return}for(const f of files){const p=await compressImage(f);if(p)selectedLumPhotos.push(p)}renderLumPhotos();e.target.value=''};
-$('btnAddLum').onclick=async()=>{const stats=await orderStats(activeOrderId);if(stats.luminaires.length>=MAX_LUMINAIRES_PER_ORDER){toast(`Esta orden ya tiene ${MAX_LUMINAIRES_PER_ORDER} luminarias. No se pueden registrar más.`);return}if(!stats.structures.some(s=>upper(s.class)==='CD'&&normalizeCdValue(s.cd)===normalizeCdValue((activeStructureId&&stats.structures.find(x=>x.id===activeStructureId)?.cd)||''))){toast('Primero registra el CD de esta estructura');returnStructureDetailId=null;resetStructure();await renderStructureForm();show('structure');return}$('lmSerial').value='';$('lmArmLength').value='';$('lmTech').value='';$('lmType').value='';$('lmPower').value='';$('lmSupply').value='';$('lmControl').value='';$('lmClass').value='';$('lmObservation').value='';updateTechHelp();updateTypeHelp();selectedLumPhotos=[];lmNovelty='NO';buildLumFindings();setLumNovelty('NO');renderLumPhotos();const s=await get('structures',activeStructureId);const label=nextLumLabel(await all('luminaires'),s.orderId,s.cd);$('lmLabelHint').textContent=`Obligatorio: registra el rótulo real o escribe ILEGIBLE o NO MARCADO. En esos casos se asignará ${label} en este CD.`;$('lumModal').classList.add('open')};
+async function openLumFormForCreate(){
+  const stats=await orderStats(activeOrderId);
+  if(stats.luminaires.length>=MAX_LUMINAIRES_PER_ORDER){toast(`Esta orden ya tiene ${MAX_LUMINAIRES_PER_ORDER} luminarias. No se pueden registrar más.`);return}
+  if(!stats.structures.some(s=>upper(s.class)==='CD'&&normalizeCdValue(s.cd)===normalizeCdValue((activeStructureId&&stats.structures.find(x=>x.id===activeStructureId)?.cd)||''))){toast('Primero registra el CD de esta estructura');returnStructureDetailId=null;resetStructure();await renderStructureForm();show('structure');return}
+  editingLumId=null;$('lumModalTitle').textContent='Agregar luminaria';$('btnSaveLum').textContent='Guardar luminaria';
+  $('lmSerial').value='';$('lmArmLength').value='';$('lmTech').value='';$('lmType').value='';$('lmPower').value='';$('lmSupply').value='';$('lmControl').value='';$('lmClass').value='';$('lmObservation').value='';
+  updateTechHelp();updateTypeHelp();selectedLumPhotos=[];lmNovelty='NO';buildLumFindings();setLumNovelty('NO');renderLumPhotos();
+  const s=await get('structures',activeStructureId),label=nextLumLabel(await all('luminaires'),s.orderId,s.cd);
+  $('lmLabelHint').textContent=`Obligatorio: registra el rótulo real o escribe ILEGIBLE o NO MARCADO. En esos casos se asignará ${label} en este CD.`;
+  $('lumModal').classList.add('open')
+}
+$('btnAddLum').onclick=openLumFormForCreate;
+
+async function editLuminaire(id){
+  const l=await get('luminaires',id);if(!l)return;
+  editingLumId=l.id;activeStructureId=l.structureId;
+  $('lumModalTitle').textContent='Editar luminaria';$('btnSaveLum').textContent='Actualizar luminaria';
+  $('lmSerial').value=l.originalSerial||l.serial||'';$('lmArmLength').value=l.armLength??'';$('lmTech').value=l.technology||'';$('lmType').value=l.type||'';$('lmPower').value=l.power??'';$('lmSupply').value=l.supply||'';$('lmControl').value=l.control||'';$('lmClass').value=l.classification||'';$('lmObservation').value=l.observation||'';
+  selectedLumPhotos=Array.isArray(l.photos)?l.photos.map(p=>({...p})):[];
+  updateTechHelp();updateTypeHelp();buildLumFindings();
+  const wantedIds=new Set((l.findingDetails||[]).map(x=>x.id).filter(Boolean)),wantedLabels=new Set((l.findings||[]).map(upper));
+  setLumNovelty(l.hasNovelty||wantedIds.size||wantedLabels.size?'SI':'NO');
+  qsa('#lumFindings input').forEach(ch=>{const row=ch.closest('.finding-item');const label=upper(row?.innerText||'');ch.checked=wantedIds.has(ch.value)||wantedLabels.has(label);if(row){row.classList.toggle('is-selected',ch.checked);row.setAttribute('aria-selected',String(ch.checked))}});
+  updateLumCalculatedState();renderLumPhotos();$('lumModal').classList.add('open')
+}
+
 // El botón Cancelar y la X ejecutan la misma salida sin guardar.
 function hasLumDraft(){
-  return Boolean(
-    ['lmSerial','lmArmLength','lmTech','lmType','lmPower','lmSupply','lmControl','lmClass','lmObservation']
-      .some(id=>String($(id).value).trim()) || lmNovelty==='SI' || selectedLumPhotos.length
-  );
+  return Boolean(['lmSerial','lmArmLength','lmTech','lmType','lmPower','lmSupply','lmControl','lmClass','lmObservation'].some(id=>String($(id).value).trim()) || lmNovelty==='SI' || selectedLumPhotos.length);
 }
 function cancelLum(){
-  if(hasLumDraft()&&!window.confirm('¿Descartar los datos sin guardar de esta luminaria?'))return;
-  selectedLumPhotos=[];
-  $('lmPhotos').value='';
-  $('lumModal').classList.remove('open');
-  // Continúa en la estructura actual sin eliminar sus registros.
+  if(hasLumDraft()&&!window.confirm(editingLumId?'¿Descartar los cambios de esta luminaria?':'¿Descartar los datos sin guardar de esta luminaria?'))return;
+  editingLumId=null;selectedLumPhotos=[];$('lmPhotos').value='';$('lumModal').classList.remove('open');
 }
 $('btnCancelLum').onclick=cancelLum;
 qsa('[data-close]').forEach(b=>b.onclick=()=>b.dataset.close==='lumModal'?cancelLum():$(b.dataset.close).classList.remove('open'));
 $('btnSaveLum').onclick=async()=>{
- const s=await get('structures',activeStructureId);if(!s)return;
- const serialEntered=upper($('lmSerial').value),tech=upper($('lmTech').value),type=upper($('lmType').value),power=$('lmPower').value.trim(),arm=$('lmArmLength').value.trim().replace(',','.'),supply=upper($('lmSupply').value),control=upper($('lmControl').value),classification=upper($('lmClass').value),fs=selectedFindingObjects(),finalState=calculateLumState(fs),securityCondition=calculateLumSecurity(fs);
- if(!serialEntered){toast('El rótulo / serial es obligatorio. Registra el rótulo o escribe ILEGIBLE o NO MARCADO.');$('lmSerial').focus();return}
- if(!tech||!type||!power||!arm||!supply||!control||!classification){toast('Completa todos los campos de la luminaria');return}
- if(!Number.isFinite(Number(arm))||Number(arm)<=0){toast('Indica la longitud del brazo en metros (mayor que cero)');return}
- if(!Number.isFinite(Number(power))||Number(power)<=0){toast('Indica una potencia válida');return}
- if(lmNovelty==='SI'&&!fs.length){toast('Selecciona al menos una novedad de la luminaria');return}
- if(selectedLumPhotos.length<PHOTO_MIN||selectedLumPhotos.length>PHOTO_MAX){toast('Carga entre 3 y 7 fotografías de la luminaria');return}
- const currentOrderStats=await orderStats(s.orderId);
- if(currentOrderStats.luminaires.length>=MAX_LUMINAIRES_PER_ORDER){toast(`Esta orden ya alcanzó el máximo de ${MAX_LUMINAIRES_PER_ORDER} luminarias. No se pueden registrar más.`);return}
- const allLums=await all('luminaires');
- const serial=isNoLabel(serialEntered)?nextLumLabel(allLums,s.orderId,s.cd):serialEntered;
- if(allLums.some(l=>l.orderId===s.orderId&&normalizeCdValue(l.cd)===normalizeCdValue(s.cd)&&upper(l.serial)===serial)){
-  toast(`El rótulo ${serial} ya existe en este CD`);return;
- }
- const l={id:uid('LUM'),structureId:s.id,orderId:s.orderId,order:s.order,cd:s.cd,node:s.node,serial,originalSerial:serialEntered,armLength:Number(arm),technology:tech,type,power,supply,control,classification,hasNovelty:lmNovelty==='SI',findings:fs.map(f=>upper(f.label)),findingDetails:fs.map(f=>({id:f.id,category:apGroupLum(f),description:upper(f.label)})),finalState,securityCondition,photos:selectedLumPhotos,observation:upper($('lmObservation').value),createdAt:nowIso(),updatedAt:nowIso(),syncStatus:'pending'};
- await put('luminaires',l);await touchOrder(s.orderId);selectedLumPhotos=[];$('lumModal').classList.remove('open');await renderStructureDetail();await dashboard();
- const o=await get('orders',s.orderId),st=await orderStats(s.orderId);toast(st.luminaires.length>=o.target?`Orden ${o.order}: inventario ${st.luminaires.length}/${o.target}`:`${serial} guardada`);
+  const s=await get('structures',activeStructureId);if(!s)return;
+  const current=editingLumId?await get('luminaires',editingLumId):null;
+  const serialEntered=upper($('lmSerial').value),tech=upper($('lmTech').value),type=upper($('lmType').value),power=$('lmPower').value.trim(),arm=$('lmArmLength').value.trim().replace(',','.'),supply=upper($('lmSupply').value),control=upper($('lmControl').value),classification=upper($('lmClass').value),fs=selectedFindingObjects(),finalState=calculateLumState(fs),securityCondition=calculateLumSecurity(fs);
+  if(!serialEntered){toast('El rótulo / serial es obligatorio. Registra el rótulo o escribe ILEGIBLE o NO MARCADO.');$('lmSerial').focus();return}
+  if(!tech||!type||!power||!arm||!supply||!control||!classification){toast('Completa todos los campos de la luminaria');return}
+  if(!Number.isFinite(Number(arm))||Number(arm)<=0){toast('Indica la longitud del brazo en metros (mayor que cero)');return}
+  if(!Number.isFinite(Number(power))||Number(power)<=0){toast('Indica una potencia válida');return}
+  if(lmNovelty==='SI'&&!fs.length){toast('Selecciona al menos una novedad de la luminaria');return}
+  if(selectedLumPhotos.length<PHOTO_MIN||selectedLumPhotos.length>PHOTO_MAX){toast('Carga entre 3 y 7 fotografías de la luminaria');return}
+  const currentOrderStats=await orderStats(s.orderId);
+  if(!current&&currentOrderStats.luminaires.length>=MAX_LUMINAIRES_PER_ORDER){toast(`Esta orden ya alcanzó el máximo de ${MAX_LUMINAIRES_PER_ORDER} luminarias. No se pueden registrar más.`);return}
+  const allLums=await all('luminaires'),others=allLums.filter(l=>l.id!==editingLumId);
+  const serial=isNoLabel(serialEntered)?(current&&isNoLabel(current.originalSerial)?current.serial:nextLumLabel(others,s.orderId,s.cd)):serialEntered;
+  if(others.some(l=>l.orderId===s.orderId&&normalizeCdValue(l.cd)===normalizeCdValue(s.cd)&&upper(l.serial)===serial)){toast(`El rótulo ${serial} ya existe en este CD`);return}
+  const l={id:current?.id||uid('LUM'),structureId:s.id,orderId:s.orderId,order:s.order,cd:s.cd,node:s.node,serial,originalSerial:serialEntered,armLength:Number(arm),technology:tech,type,power,supply,control,classification,hasNovelty:lmNovelty==='SI',findings:fs.map(f=>upper(f.label)),findingDetails:fs.map(f=>({id:f.id,category:apGroupLum(f),description:upper(f.label)})),finalState,securityCondition,photos:selectedLumPhotos.map(p=>({...p})),observation:upper($('lmObservation').value),createdAt:current?.createdAt||nowIso(),updatedAt:nowIso(),syncStatus:'pending'};
+  await put('luminaires',l);await touchOrder(s.orderId);editingLumId=null;selectedLumPhotos=[];$('lumModal').classList.remove('open');await renderStructureDetail();await dashboard();
+  const o=await get('orders',s.orderId),st=await orderStats(s.orderId);
+  toast(current?'Luminaria actualizada':(st.luminaires.length>=o.target?`Orden ${o.order}: inventario ${st.luminaires.length}/${o.target}`:`${serial} guardada`))
 };
 $('btnNewStructureSameOrder').onclick=async()=>{returnStructureDetailId=activeStructureId;resetStructure();await renderStructureForm();show('structure')};$('btnGoOrderSummary').onclick=async()=>{await renderSummary(activeOrderId);show('summary')};
 
