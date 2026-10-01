@@ -1,4 +1,4 @@
-/* AP Inventory 0.8.16 · hallazgos matriciales, nocturno y entrega */
+/* AP Inventory 0.8.17 · hallazgos matriciales, nocturno y entrega */
 (()=>{
 'use strict';
 const byId=id=>document.getElementById(id);
