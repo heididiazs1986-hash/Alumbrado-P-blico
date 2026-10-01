@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#FEFEFF" />
-<title>AP Inventory v0.8.15</title>
+<title>AP Inventory v0.8.16</title>
 <link rel="manifest" href="manifest.json" />
 <script src="app-config.js"></script>
 <style>
@@ -458,8 +458,8 @@ body,.field input,.field textarea,.field select{font-weight:400}
 .form-actions .primary-btn{background:#FF6600;color:#fff}
 @media(max-width:420px){.form-actions{grid-template-columns:minmax(0,1fr) minmax(0,1.7fr)}}
 </style>
-<link rel="stylesheet" href="ui-refinement.css?v=0815" />
-<link rel="stylesheet" href="ap-extended.css?v=0815" />
+<link rel="stylesheet" href="ui-refinement.css?v=0816" />
+<link rel="stylesheet" href="ap-extended.css?v=0816" />
 </head>
 <body>
 <header class="appbar">
@@ -570,14 +570,8 @@ body,.field input,.field textarea,.field select{font-weight:400}
     <div class="toolbar"><button class="back" data-go="home">←</button><h2>Sincronizar</h2></div>
     <div class="card sync-panel">
       <div class="mt12 small" id="syncInfo"></div>
-      <div class="sync-state" id="syncState" role="status" aria-live="polite">Sin archivos preparados.</div>
-      <div class="actions sync-actions mt12">
-        <button class="action" type="button" id="btnSyncExcel"><span class="ico">📊</span><span>Excel</span></button>
-        <button class="action" type="button" id="btnSyncZip"><span class="ico">📷</span><span>Fotos ZIP</span></button>
-        <button class="action" type="button" id="btnSyncKmz"><span class="ico">🗺️</span><span>KMZ por CD</span></button>
-        <button class="action primary" type="button" id="btnPrepareSync"><span class="ico">☁</span><span>Preparar todo</span></button>
-      </div>
-      <div class="sync-buttons one mt12"><button class="primary-btn" type="button" id="btnOpenSync">Cargar</button></div>
+      <div class="sync-state" id="syncState" role="status" aria-live="polite">Listo para preparar la entrega del día.</div>
+      <button class="primary-btn full mt12" type="button" id="btnSyncAll">Preparar y cargar</button>
     </div>
   </section>
 </main>
@@ -1065,9 +1059,10 @@ function buildCdKmz(cd,structures,luminaires,referencePoints=[]){
  // Los archivos KMZ no incluyen el CD de referencia de programación: solamente la estructura CD levantada con su GPS real.
  const kml=`<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>AP INVENTORY · CD ${xml(cd)}</name><description>${xml('Iconos: CD naranja, nodo MT azul oscuro, nodo BT azul claro, luminarias amarillas individuales. Cada luminaria hereda el GPS exacto del nodo; la línea y el punto amarillo aparecen a unos píxeles de su propia estructura.')}</description>${kmlIconStyle('cd','icons/cd.png',.7)}${kmlIconStyle('mt','icons/mt.png',.59)}${kmlIconStyle('bt','icons/bt.png',.59)}${linkedStyles}${folders.join('')}</Document></kml>`;
  const output=[{name:'doc.kml',data:kml},...['cd','mt','bt'].map(k=>({name:`icons/${k}.png`,data:base64Bytes(KMZ_ICON_BASE64[k])})),...Object.entries(KMZ_ASSOCIATED_LUM_ICONS).map(([k,v])=>({name:`icons/${k}.png`,data:base64Bytes(v)}))];
- return zipStore(output);
+ const pkg=zipStore(output);
+ return pkg.slice(0,pkg.size,'application/vnd.google-earth.kmz');
 }
-async function exportKmzByCd(orderId=null){const allStructures=await all('structures'),structures=allStructures.filter(s=>!orderId||s.orderId===orderId),allLums=await all('luminaires'),groups=new Map();for(const s of structures){const cd=upper(s.cd);if(!cd||!s.lat||!s.lon)continue;if(!groups.has(cd))groups.set(cd,[]);groups.get(cd).push(s)}if(!groups.size){toast('No hay estructuras georreferenciadas para generar KMZ');return}let n=0,withoutCdGps=[];for(const [cd,ss] of groups){const ids=new Set(ss.map(s=>s.id)),ll=allLums.filter(l=>ids.has(l.structureId));if(!ss.some(s=>upper(s.class)==='CD'))withoutCdGps.push(cd);const blob=buildCdKmz(cd,ss,ll,[]);setTimeout(()=>download(`KMZ_AP_${safeFilePart(cd)}.kmz`,blob,'application/vnd.google-earth.kmz'),n*260);n++}toast(withoutCdGps.length?`${n} KMZ; ATENCIÓN: falta GPS del CD en ${withoutCdGps.join(', ')}`:`${n} KMZ por CD preparado${n===1?'':'s'}`)}
+async function exportKmzByCd(orderId=null){const allStructures=await all('structures'),structures=allStructures.filter(s=>!orderId||s.orderId===orderId),allLums=await all('luminaires'),groups=new Map();for(const s of structures){const cd=upper(s.cd);if(!cd||!s.lat||!s.lon)continue;if(!groups.has(cd))groups.set(cd,[]);groups.get(cd).push(s)}if(!groups.size){toast('No hay estructuras georreferenciadas para generar KMZ');return 0}let n=0,withoutCdGps=[];for(const [cd,ss] of groups){const ids=new Set(ss.map(s=>s.id)),ll=allLums.filter(l=>ids.has(l.structureId));if(!ss.some(s=>upper(s.class)==='CD'))withoutCdGps.push(cd);const blob=buildCdKmz(cd,ss,ll,[]);download(`${safeFilePart(cd)}.kmz`,blob,'application/vnd.google-earth.kmz');n++;if(n<groups.size)await new Promise(r=>setTimeout(r,260))}toast(withoutCdGps.length?`${n} KMZ; ATENCIÓN: falta GPS del CD en ${withoutCdGps.join(', ')}`:`${n} KMZ por CD preparado${n===1?'':'s'}`);return n}
 async function technicalPackage(orderId=null){const settings=await getSettings(),orders=(await all('orders')).filter(o=>!orderId||o.id===orderId),structures=(await all('structures')).filter(s=>!orderId||s.orderId===orderId),ids=new Set(structures.map(s=>s.id)),luminaires=(await all('luminaires')).filter(l=>ids.has(l.structureId));return {schema:'ap-inventory-1.2',exportId:uid('SYNC'),generatedAt:nowIso(),crew:settings,orders,structures:structures.map(({photos,...x})=>({...x,photoCount:photos?.length||0})),luminaires:luminaires.map(({photos,...x})=>({...x,photoCount:photos?.length||0}))}}
 
 async function exportDailyPhotosZip(date=localDateKey()){const settings=await getSettings(),id=exportIdentity(settings),ctx=await dailyContext(date),files=[];if(!ctx.structures.length&&!ctx.luminaires.length){toast('No hay fotografías del día para exportar');return}const lumByStructure=new Map();for(const l of ctx.luminaires){if(!lumByStructure.has(l.structureId))lumByStructure.set(l.structureId,[]);lumByStructure.get(l.structureId).push(l)}for(const s of ctx.structures){const base=`${safeFilePart(s.order)}_${safeFilePart(s.cd)}_${safeFilePart(s.node)}`;(s.photos||[]).forEach((p,i)=>{const b=dataUrlBytes(p.dataURL);if(b.length)files.push({name:`${base}/ESTRUCTURA_${String(i+1).padStart(2,'0')}.jpg`,data:b})});const ll=lumByStructure.get(s.id)||[];let missing=0;ll.forEach((l,idx)=>{const noLabel=isNoLabel(l.serial);if(noLabel)missing++;const suffix=safeFilePart(resolvedLumLabel(l,missing||idx+1),'LUMINARIA_'+(idx+1));const folder=`${base}_${suffix}`;(l.photos||[]).forEach((p,i)=>{const b=dataUrlBytes(p.dataURL);if(b.length)files.push({name:`${folder}/LUMINARIA_${String(i+1).padStart(2,'0')}.jpg`,data:b})})})}if(!files.length){toast('No hay fotografías almacenadas para las órdenes del día');return}download(`FOTOS_AP_${id.first}_${id.last}_${date}.zip`,zipStore(files),'application/zip')}
@@ -1137,7 +1132,7 @@ document.addEventListener('blur',e=>forceOperationalUppercase(e.target),true);
 if('serviceWorker'  in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 (async()=>{await openDb();await migrateLegacyLumLabels();populateLoginUsers();buildStructureFindings();setStructureNovelty('NO');buildLumFindings();setLumNovelty('NO');await dashboard();await ensureUserSession();})();
 </script>
-<script src="ui-refinement.js?v=0815"></script>
-<script src="ap-extended.js?v=0815"></script>
+<script src="ui-refinement.js?v=0816"></script>
+<script src="ap-extended.js?v=0816"></script>
 </body>
 </html>
