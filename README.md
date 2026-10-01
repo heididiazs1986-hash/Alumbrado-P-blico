@@ -111,3 +111,8 @@ La hoja **ESTRUCTURAS** agrega la columna `CAPACIDAD_TRANSFORMADOR_KVA`. El KMZ 
 - Se eliminan de Sync los botones individuales redundantes; continúan disponibles en Exportar.
 - El KMZ se descarga como un único archivo con MIME de Google Earth y nombre basado únicamente en el CD, por ejemplo E25418TR1.kmz.
 - El KMZ sigue siendo internamente un contenedor comprimido, como define el formato KMZ, pero no se agrega un ZIP exterior.
+
+
+## v0.8.17
+- Se elimina el manejador antiguo de “Preparar todo” que podía detener el JavaScript al ya no existir ese botón.
+- Sync queda definitivamente con un único botón: Preparar y cargar.
