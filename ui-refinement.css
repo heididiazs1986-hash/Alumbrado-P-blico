@@ -1,4 +1,4 @@
-/* AP Inventory v0.8.18 · interfaz ligera */
+/* AP Inventory v0.8.19 · interfaz ligera */
 :root{--primary:#FF6600;--secondary:#C1C7CE;--tertiary:#79D1FF;--neutral:#FEFEFF}
 #activeOrderNotice{padding:11px 13px!important;line-height:1.45;font-size:.84rem;font-weight:400;background:#E8F7FF!important;border:1px solid #B5E7FC!important;color:#1D526D!important}
 #activeOrderNotice strong{font-weight:650;color:#183A51}
@@ -57,3 +57,12 @@
 /* v0.8.18 · prioridad final: control de tema circular sin texto */
 .theme-switch{width:38px!important;min-width:38px!important;height:38px!important;padding:0!important;border-radius:50%!important;font-size:1.15rem!important}
 @media(max-width:370px){.theme-switch{width:36px!important;min-width:36px!important;height:36px!important;padding:0!important;font-size:1.05rem!important}}
+
+/* v0.8.19 · edición de registros */
+.detail-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.detail-actions .reference-btn{margin:0;flex:1 1 180px}
+.photo{position:relative}
+.photo-remove{position:absolute;top:4px;right:4px;width:25px;height:25px;border:0;border-radius:999px;background:rgba(20,31,42,.78);color:#fff;font-size:18px;line-height:25px;padding:0;display:grid;place-items:center;z-index:3}
+.lum-head{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.lum-head .tiny-btn{margin-left:0}
+.lum-head .chip+.tiny-btn{margin-left:auto}
