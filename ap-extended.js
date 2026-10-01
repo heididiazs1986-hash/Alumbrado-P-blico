@@ -1,4 +1,4 @@
-/* AP Inventory 0.8.14 · hallazgos matriciales, nocturno y entrega */
+/* AP Inventory 0.8.16 · hallazgos matriciales, nocturno y entrega */
 (()=>{
 'use strict';
 const byId=id=>document.getElementById(id);
@@ -81,19 +81,17 @@ byId('btnTheme')?.addEventListener('click',()=>{
  const next=document.documentElement.dataset.theme==='dark'?'light':'dark';setTheme(next);
  try{localStorage.setItem(themeKey,next)}catch{}
 });
-const openBtn=byId('btnOpenSync'),state=byId('syncState');
+const syncBtn=byId('btnSyncAll'),state=byId('syncState');
 async function refreshDelivery(){
  if(!state)return;
  const record=await get('sync','SYNC-'+localDateKey());
  if(!record){
   state.className='sync-state';
-  state.textContent='Pendiente: prepara los archivos del día.';
-  if(openBtn)openBtn.disabled=true;
+  state.textContent='Listo para preparar la entrega del día.';
   return;
  }
  state.className='sync-state pending';
- state.textContent='Archivos preparados. Pulsa Cargar para abrir la carpeta de recepción.';
- if(openBtn)openBtn.disabled=false;
+ state.textContent='Última preparación realizada. Puedes volver a generar y cargar si hiciste cambios.';
 }
 const originalPut=put;
 renderSyncInfo=async function(){
@@ -104,34 +102,64 @@ renderSyncInfo=async function(){
 };
 (async()=>{try{for(let n=0;n<40&&!db;n++)await new Promise(r=>setTimeout(r,100));if(!db)return;await refreshDelivery()}catch(e){console.warn('Sync',e)}})();
 
-byId('btnSyncExcel')?.addEventListener('click',()=>exportExcel(null));
-byId('btnSyncZip')?.addEventListener('click',()=>exportDailyPhotosZip(localDateKey()));
-byId('btnSyncKmz')?.addEventListener('click',()=>exportKmzByCd());
-
-byId('btnPrepareSync').onclick=async()=>{
- const btn=byId('btnPrepareSync');btn.disabled=true;btn.textContent='Preparando…';
- try{
-  const date=localDateKey(),data=await excelData(null,date);
-  if(data.every(x=>x.rows.length<=1)){toast('No hay inventario del día para entregar');return}
-  await exportExcel(null);await new Promise(r=>setTimeout(r,400));
-  await exportDailyPhotosZip(date);await new Promise(r=>setTimeout(r,400));
-  await exportKmzByCd();
-  await originalPut('sync',{id:'SYNC-'+date,date,status:'prepared',generatedAt:nowIso()});
-  await refreshDelivery();await dashboard();
-  toast('Archivos listos para cargar.');
- }catch(e){
-  console.error(e);toast('No se prepararon todos los archivos');
- }finally{
-  btn.disabled=false;btn.innerHTML='<span class="ico">☁</span><span>Preparar todo</span>';
- }
-};
-
-openBtn?.addEventListener('click',()=>{
+syncBtn?.addEventListener('click',async()=>{
  const target=String(APP_CFG.syncUploadUrl||'').trim();
  try{const u=new URL(target);if(u.protocol!=='https:')throw Error('HTTPS')}catch{
   toast('Destino de recepción no configurado');return;
  }
- const popup=window.open(target,'_blank','noopener');
- toast(popup===null?'Permite abrir la carpeta de recepción desde el navegador':'Abriendo carpeta de recepción');
+
+ // Se abre inmediatamente para conservar el gesto del usuario y evitar bloqueos del navegador.
+ let receptionWindow=null;
+ try{receptionWindow=window.open('about:blank','_blank')}catch{}
+ if(receptionWindow){
+  try{
+   receptionWindow.document.title='AP Inventory · Preparando archivos';
+   receptionWindow.document.body.innerHTML='<p style="font-family:system-ui;padding:24px">Preparando archivos de AP Inventory…</p>';
+  }catch{}
+ }
+
+ syncBtn.disabled=true;
+ syncBtn.textContent='Preparando…';
+ state.className='sync-state pending';
+ state.textContent='Generando Excel, fotografías y KMZ…';
+
+ try{
+  const date=localDateKey(),data=await excelData(null,date);
+  if(data.every(x=>x.rows.length<=1)){
+   if(receptionWindow)receptionWindow.close();
+   state.className='sync-state';
+   state.textContent='No hay inventario del día para cargar.';
+   toast('No hay inventario del día para entregar');
+   return;
+  }
+
+  await exportExcel(null);
+  await new Promise(r=>setTimeout(r,450));
+  await exportDailyPhotosZip(date);
+  await new Promise(r=>setTimeout(r,450));
+  await exportKmzByCd();
+
+  await originalPut('sync',{id:'SYNC-'+date,date,status:'prepared',generatedAt:nowIso()});
+  await dashboard();
+  state.className='sync-state sent';
+  state.textContent='Archivos preparados. Abriendo recepción en SharePoint…';
+
+  if(receptionWindow){
+   receptionWindow.location.href=target;
+   try{receptionWindow.opener=null}catch{}
+  }else{
+   window.location.href=target;
+  }
+  toast('Archivos preparados. Cárgalos en la carpeta de recepción.');
+ }catch(e){
+  console.error(e);
+  if(receptionWindow)try{receptionWindow.close()}catch{}
+  state.className='sync-state pending';
+  state.textContent='No fue posible preparar todos los archivos.';
+  toast('No se prepararon todos los archivos');
+ }finally{
+  syncBtn.disabled=false;
+  syncBtn.textContent='Preparar y cargar';
+ }
 });
 })();
