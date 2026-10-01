@@ -1,4 +1,4 @@
-## AP Inventory v0.8.11 — capacidad del transformador
+## AP Inventory v0.8.12 — capacidad del transformador
 
 En **Nueva estructura AP**, cuando el tipo es **CD**, aparece un selector obligatorio **Capacidad del transformador (kVA)**, con el catálogo exacto de GS Diagnósticos: 5, 10, 15, 25, 30, 45, 75, 112.5, 150 y 225 kVA. No se muestra para MT/BT: estos nodos heredan la capacidad del CD de la misma orden. En una estructura CD ya registrada, la ficha permite agregar o corregir el kVA y actualizar los nodos asociados sin borrar datos.
 
@@ -69,9 +69,15 @@ La hoja **ESTRUCTURAS** agrega la columna `CAPACIDAD_TRANSFORMADOR_KVA`. El KMZ 
 - La flecha de retorno de estructura y la X de luminaria comparten comportamiento seguro con Cancelar.
 
 
-## v0.8.11
+## v0.8.12
 - Multiselectores de hallazgos compactos, agrupados por categoría técnica.
 - Exportación conserva PRESENTA_NOVEDADES y separa GRUPO/CATEGORÍA de DESCRIPCIÓN para estructuras y luminarias.
 - Modo nocturno visible y persistente (Noche/Claro).
 - Sincronización con accesos directos a Excel, Fotos ZIP, KMZ por CD y Preparar todo.
 - Renovación de caché PWA para evitar servir recursos visuales antiguos.
+
+
+## v0.8.12
+- Se elimina el botón independiente “Guardar kVA”.
+- La capacidad del transformador se actualiza automáticamente al cambiar el valor en la estructura CD.
+- El valor se propaga a las estructuras relacionadas del mismo CD.
