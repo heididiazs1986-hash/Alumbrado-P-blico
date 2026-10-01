@@ -1,4 +1,4 @@
-/* AP Inventory 0.8.17 · hallazgos matriciales, nocturno y entrega */
+/* AP Inventory 0.8.18 · hallazgos matriciales, nocturno y entrega */
 (()=>{
 'use strict';
 const byId=id=>document.getElementById(id);
@@ -73,7 +73,7 @@ const themeKey='ap_inventory_theme';
 function setTheme(name){
  const dark=name==='dark';document.documentElement.dataset.theme=dark?'dark':'light';
  const btn=byId('btnTheme');
- if(btn){btn.textContent=dark?'☀ Claro':'☾ Noche';btn.setAttribute('aria-label',dark?'Usar modo claro':'Usar modo nocturno');btn.setAttribute('aria-pressed',String(dark))}
+ if(btn){btn.textContent=dark?'☀':'☾';btn.setAttribute('aria-label',dark?'Usar modo claro':'Usar modo nocturno');btn.setAttribute('title',dark?'Modo claro':'Modo nocturno');btn.setAttribute('aria-pressed',String(dark))}
  const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=dark?'#121B24':'#FEFEFF';
 }
 try{setTheme(localStorage.getItem(themeKey)==='dark'?'dark':'light')}catch{setTheme('light')}
