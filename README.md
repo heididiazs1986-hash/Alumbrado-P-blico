@@ -81,3 +81,11 @@ La hoja **ESTRUCTURAS** agrega la columna `CAPACIDAD_TRANSFORMADOR_KVA`. El KMZ 
 - Se elimina el botón independiente “Guardar kVA”.
 - La capacidad del transformador se actualiza automáticamente al cambiar el valor en la estructura CD.
 - El valor se propaga a las estructuras relacionadas del mismo CD.
+
+
+## v0.8.13
+- Hallazgos exclusivos para estructura CD, mostrados antes que los hallazgos del poste.
+- Grupos: TRANSFORMADOR, PUESTA A TIERRA DEL CD y PROTECCIONES DEL CD.
+- Incluye fuga de aceite, daños visibles en transformador, puesta a tierra, DPS y cortacircuitos/portafusibles.
+- Estos hallazgos no aparecen para estructuras MT o BT.
+- La matriz Excel conserva grupo/categoría y descripción seleccionada.
