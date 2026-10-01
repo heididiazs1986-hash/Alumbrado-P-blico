@@ -103,3 +103,11 @@ La hoja **ESTRUCTURAS** agrega la columna `CAPACIDAD_TRANSFORMADOR_KVA`. El KMZ 
 - Corrección del tipo MIME del Excel exportado.
 - El registro diario ahora descarga como .xlsx, no .xlsx.zip.
 - Se mantiene el contenido OOXML y las tablas tbl_Estructuras y tbl_Luminarias para Power Automate.
+
+
+## v0.8.16
+- Sincronización simplificada a un único botón “Preparar y cargar”.
+- El botón genera Excel + ZIP de fotografías + KMZ por CD y abre inmediatamente la carpeta fija de recepción en SharePoint.
+- Se eliminan de Sync los botones individuales redundantes; continúan disponibles en Exportar.
+- El KMZ se descarga como un único archivo con MIME de Google Earth y nombre basado únicamente en el CD, por ejemplo E25418TR1.kmz.
+- El KMZ sigue siendo internamente un contenedor comprimido, como define el formato KMZ, pero no se agrega un ZIP exterior.
