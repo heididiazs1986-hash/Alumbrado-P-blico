@@ -1,4 +1,4 @@
-/* AP Inventory 0.8.13 · hallazgos matriciales, nocturno y entrega */
+/* AP Inventory 0.8.14 · hallazgos matriciales, nocturno y entrega */
 (()=>{
 'use strict';
 const byId=id=>document.getElementById(id);
@@ -81,52 +81,57 @@ byId('btnTheme')?.addEventListener('click',()=>{
  const next=document.documentElement.dataset.theme==='dark'?'light':'dark';setTheme(next);
  try{localStorage.setItem(themeKey,next)}catch{}
 });
-const urlField=byId('syncUploadUrl'),openBtn=byId('btnOpenSync'),confirmBtn=byId('btnConfirmSync'),state=byId('syncState');
+const openBtn=byId('btnOpenSync'),state=byId('syncState');
 async function refreshDelivery(){
  if(!state)return;
  const record=await get('sync','SYNC-'+localDateKey());
- if(!record){state.className='sync-state';state.textContent='Pendiente: preparar los archivos del día.';openBtn.disabled=true;confirmBtn.disabled=true;return}
- if(record.status==='uploaded_unverified'){
-  state.className='sync-state sent';state.textContent='Carga reportada por el técnico. Pendiente de verificación en recepción.';
-  openBtn.disabled=false;confirmBtn.disabled=true;
- }else{
-  state.className='sync-state pending';state.textContent='Archivos preparados en Descargas. Aún NO se ha confirmado su carga.';
-  openBtn.disabled=false;confirmBtn.disabled=false;
+ if(!record){
+  state.className='sync-state';
+  state.textContent='Pendiente: prepara los archivos del día.';
+  if(openBtn)openBtn.disabled=true;
+  return;
  }
+ state.className='sync-state pending';
+ state.textContent='Archivos preparados. Pulsa Cargar para abrir la carpeta de recepción.';
+ if(openBtn)openBtn.disabled=false;
 }
 const originalPut=put;
-const oldRender=renderSyncInfo;
-renderSyncInfo=async function(){const d=await dailyContext();const info=byId('syncInfo');if(info)info.innerHTML=`<b>${d.orders.length}</b> órdenes · <b>${d.structures.length}</b> estructuras · <b>${d.luminaires.length}</b> luminarias`;await refreshDelivery()};
-(async()=>{try{for(let n=0;n<40&&!db;n++)await new Promise(r=>setTimeout(r,100));if(!db)return;const s=await getSettings();urlField.value=s.syncUploadUrl||'';await refreshDelivery()}catch(e){console.warn('Sync',e)}})();
-urlField?.addEventListener('change',async()=>{
- const text=urlField.value.trim();
- if(text){try{if(new URL(text).protocol!=='https:')throw Error('HTTPS')}catch{toast('Introduce un vínculo de carga HTTPS');return}}
- await saveSettingsPatch({syncUploadUrl:text});toast(text?'Vínculo de recepción guardado':'Vínculo eliminado');
-});
+renderSyncInfo=async function(){
+ const d=await dailyContext();
+ const info=byId('syncInfo');
+ if(info)info.innerHTML=`<b>${d.orders.length}</b> órdenes · <b>${d.structures.length}</b> estructuras · <b>${d.luminaires.length}</b> luminarias`;
+ await refreshDelivery();
+};
+(async()=>{try{for(let n=0;n<40&&!db;n++)await new Promise(r=>setTimeout(r,100));if(!db)return;await refreshDelivery()}catch(e){console.warn('Sync',e)}})();
+
 byId('btnSyncExcel')?.addEventListener('click',()=>exportExcel(null));
 byId('btnSyncZip')?.addEventListener('click',()=>exportDailyPhotosZip(localDateKey()));
 byId('btnSyncKmz')?.addEventListener('click',()=>exportKmzByCd());
+
 byId('btnPrepareSync').onclick=async()=>{
  const btn=byId('btnPrepareSync');btn.disabled=true;btn.textContent='Preparando…';
  try{
   const date=localDateKey(),data=await excelData(null,date);
   if(data.every(x=>x.rows.length<=1)){toast('No hay inventario del día para entregar');return}
   await exportExcel(null);await new Promise(r=>setTimeout(r,400));
-  await exportDailyPhotosZip(date);await new Promise(r=>setTimeout(r,400));await exportKmzByCd();
+  await exportDailyPhotosZip(date);await new Promise(r=>setTimeout(r,400));
+  await exportKmzByCd();
   await originalPut('sync',{id:'SYNC-'+date,date,status:'prepared',generatedAt:nowIso()});
-  await refreshDelivery();await dashboard();toast('Archivos listos. Falta cargarlos en recepción.');
- }catch(e){console.error(e);toast('No se prepararon todos los archivos')}finally{btn.disabled=false;btn.textContent='Preparar'}
+  await refreshDelivery();await dashboard();
+  toast('Archivos listos para cargar.');
+ }catch(e){
+  console.error(e);toast('No se prepararon todos los archivos');
+ }finally{
+  btn.disabled=false;btn.innerHTML='<span class="ico">☁</span><span>Preparar todo</span>';
+ }
 };
+
 openBtn?.addEventListener('click',()=>{
- const text=urlField.value.trim();
- try{if(new URL(text).protocol!=='https:')throw Error('HTTPS')}catch{toast('Configura primero un vínculo válido de recepción');return}
- const popup=window.open(text,'_blank','noopener');saveSettingsPatch({syncUploadUrl:text}).catch(console.warn);toast(popup===null?'Abre el vínculo de recepción permitido desde el navegador':'Adjunta Excel, ZIP y KMZ. La carga requiere confirmación');
-});
-confirmBtn?.addEventListener('click',async()=>{
- const date=localDateKey(),r=await get('sync','SYNC-'+date);
- if(!r){toast('Primero prepara los archivos');return}
- if(!confirm('¿Terminaste de cargar TODOS los archivos? Esto NO verifica su recepción.'))return;
- await originalPut('sync',{...r,status:'uploaded_unverified',reportedAt:nowIso()});
- await refreshDelivery();await dashboard();toast('Carga reportada. Pendiente de verificación administrativa');
+ const target=String(APP_CFG.syncUploadUrl||'').trim();
+ try{const u=new URL(target);if(u.protocol!=='https:')throw Error('HTTPS')}catch{
+  toast('Destino de recepción no configurado');return;
+ }
+ const popup=window.open(target,'_blank','noopener');
+ toast(popup===null?'Permite abrir la carpeta de recepción desde el navegador':'Abriendo carpeta de recepción');
 });
 })();
