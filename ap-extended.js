@@ -1,9 +1,12 @@
-/* AP Inventory 0.8.11 · hallazgos matriciales, nocturno y entrega */
+/* AP Inventory 0.8.13 · hallazgos matriciales, nocturno y entrega */
 (()=>{
 'use strict';
 const byId=id=>document.getElementById(id);
 function cat(type,id){
  if(type==='structure'){
+  if(/^CD_(OIL|TANK|BUSHING|TERMINAL)/.test(id))return 'TRANSFORMADOR';
+  if(/^CD_GROUND/.test(id))return 'PUESTA A TIERRA DEL CD';
+  if(/^CD_(DPS|CUTOUT|HOLDER|PROTECTION)/.test(id))return 'PROTECCIONES DEL CD';
   if(id==='ST_INCLINATION')return 'GEOMETRÍA Y VERTICALIDAD';
   if(id.startsWith('ST_BASE')||id.startsWith('ST_EMBED'))return 'BASE Y EMPOTRAMIENTO';
   if(/^CO_(LONG|TRANS|MULTI)_/.test(id))return 'FISURACIÓN DEL HORMIGÓN';
