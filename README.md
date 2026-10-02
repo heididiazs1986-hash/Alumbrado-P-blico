@@ -1,4 +1,16 @@
-## AP Inventory v0.8.12 — capacidad del transformador
+## AP Inventory
+
+## v0.8.22 · Programación diaria Excel y continuidad operativa
+- Programación de campo en **un único archivo Excel (.xlsx) por jornada**.
+- Columnas obligatorias: `ORDEN | MUNICIPIO | SECTOR/BARRIO | TÉCNICO | CUADRILLA | LAT | LONG`. No se cargan observaciones de programación al técnico.
+- El filtrado se realiza por el **nombre seleccionado en el desplegable inicial**, alimentado desde AP_Usuarios; no hay digitación libre. El acceso corporativo no se usa como llave de filtrado.
+- Cada orden admite **máximo obligatorio de 10 luminarias**. Al guardar la número 10, la app obliga a seleccionar otra orden para continuar.
+- El **CD activo** permanece visible y se conserva al crear MT/BT/luminarias y también al pasar a otra orden por haber completado las 10 luminarias.
+- Al volver a pulsar **CD**, la app pregunta `¿Está seguro de cambiar de CD?` y luego `¿Continuará en la misma orden?`. Solo al confirmar cambio se limpian CD/PF y se habilita de nuevo la capacidad del transformador.
+- Fotografías: **mínimo 2 y máximo 7** por elemento.
+- Exportación geográfica: **un KMZ por fecha/jornada** con todas las órdenes trabajadas.
+
+ v0.8.12 — capacidad del transformador
 
 En **Nueva estructura AP**, cuando el tipo es **CD**, aparece un selector obligatorio **Capacidad del transformador (kVA)**, con el catálogo exacto de GS Diagnósticos: 5, 10, 15, 25, 30, 45, 75, 112.5, 150 y 225 kVA. No se muestra para MT/BT: estos nodos heredan la capacidad del CD de la misma orden. En una estructura CD ya registrada, la ficha permite agregar o corregir el kVA y actualizar los nodos asociados sin borrar datos.
 
@@ -38,9 +50,9 @@ La hoja **ESTRUCTURAS** agrega la columna `CAPACIDAD_TRANSFORMADOR_KVA`. El KMZ 
 - Menús de luminarias sin opciones «otra / no identificada» para tecnología, tipo, alimentación ni control; propiedad admite PARTICULAR.
 - Ayuda visual sin conexión de las 9 tecnologías de la referencia gráfica previamente aprobada, con recortes ilustrativos, más guías esquemáticas para los tipos de luminaria. Disponibles al seleccionar y en galería modal.
 - Tarjetas, etiquetas y estados más ligeros y acentos azul claro `#79D1FF`, respetando naranja `#FF6600`, gris `#C1C7CE` y neutral `#FEFEFF`.
-- Fotos: mínimo 3, máximo 7 por estructura/luminaria; las fotos se eligen del dispositivo (la app no abre la cámara).
+- Fotos: mínimo 2, máximo 7 por CD, estructura/nodo y luminaria; las fotos se eligen del dispositivo (la app no abre la cámara).
 - GPS de pruebas: se puede guardar sin GPS o con precisión >12 m. Se puede volver a capturar GPS de cualquier estructura guardada desde «Actualizar GPS de esta estructura». **Activar validación antes de producción**.
-- KMZ por CD levantado, con marcador CD naranja basado **solo en GPS real de la estructura CD**, MT azul oscuro, BT azul claro y una luminaria amarilla individual con conexión visual a su nodo. Cada luminaria contiene un popup individual y **comparte coordenadas reales con su nodo**; solo la figura en PNG se desplaza en pantalla. Carpetas por estructura en Google Earth.
+- KMZ único por jornada/fecha, con todas las órdenes trabajadas ese día. Conserva marcador CD naranja basado **solo en GPS real de la estructura CD**, MT azul oscuro, BT azul claro y luminarias individuales con conexión visual a su nodo. Los elementos se organizan por CD dentro del KMZ.
 - Excel de registro diario con únicamente `ESTRUCTURAS` y `LUMINARIAS`. Ambas hojas contienen **tablas Excel reales**, con `tbl_Estructuras` y `tbl_Luminarias`, IDs únicos, filtros, fila 1 inmovilizada y tipografía ligera con encabezado azul.
 - ZIP diario con **solo fotos**, carpetas según `ORDEN_CD_PUNTO_FISICO` y `ORDEN_CD_PUNTO_FISICO_ROTULO` o `LUMINARIA_1`.
 - TXT de resúmenes acumulados para ENEL, aparte del ZIP y del Excel. Cuando la APK tenga integrado el plugin nativo Filesystem, reemplaza el archivo RESUMEN_FECHA.txt en Documentos/AP_Inventory. En un navegador compatible con showSaveFilePicker conserva el archivo elegido. Otros navegadores pueden generar descargas con (1) en lugar de reemplazar: se informa al usuario de esta limitación.
@@ -73,7 +85,7 @@ La hoja **ESTRUCTURAS** agrega la columna `CAPACIDAD_TRANSFORMADOR_KVA`. El KMZ 
 - Multiselectores de hallazgos compactos, agrupados por categoría técnica.
 - Exportación conserva PRESENTA_NOVEDADES y separa GRUPO/CATEGORÍA de DESCRIPCIÓN para estructuras y luminarias.
 - Modo nocturno visible y persistente (Noche/Claro).
-- Sincronización con accesos directos a Excel, Fotos ZIP, KMZ por CD y Preparar todo.
+- Sincronización con accesos directos a Excel, Fotos ZIP, KMZ del día y Preparar todo.
 - Renovación de caché PWA para evitar servir recursos visuales antiguos.
 
 
@@ -107,9 +119,9 @@ La hoja **ESTRUCTURAS** agrega la columna `CAPACIDAD_TRANSFORMADOR_KVA`. El KMZ 
 
 ## v0.8.16
 - Sincronización simplificada a un único botón “Preparar y cargar”.
-- El botón genera Excel + ZIP de fotografías + KMZ por CD y abre inmediatamente la carpeta fija de recepción en SharePoint.
+- El botón genera Excel + ZIP de fotografías + KMZ único de la jornada y abre inmediatamente la carpeta fija de recepción en SharePoint.
 - Se eliminan de Sync los botones individuales redundantes; continúan disponibles en Exportar.
-- El KMZ se descarga como un único archivo con MIME de Google Earth y nombre basado únicamente en el CD, por ejemplo E25418TR1.kmz.
+- El KMZ se descarga como un único archivo con MIME de Google Earth y nombre basado en técnico + fecha de jornada.
 - El KMZ sigue siendo internamente un contenedor comprimido, como define el formato KMZ, pero no se agrega un ZIP exterior.
 
 
