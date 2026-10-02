@@ -56,7 +56,7 @@ if(typeof renderStructureDetail==='function'){
 for(const [id,label] of Object.entries({btnGps:'⌖ Coordenadas',btnSaveStructure:'Guardar',btnSaveLum:'Guardar',btnDownloadOrderTxt:'TXT diario',btnCopySummary:'Copiar',btnPrepareSync:'Preparar'})){
  const el=document.getElementById(id);if(el)el.textContent=label;
 }
-for(const [id,label] of Object.entries({btnAllExcel:'Excel',btnAllZip:'Fotos ZIP',btnDailyTxt:'Resumen TXT',btnShareDailyTxt:'Compartir TXT',btnAllKmz:'KMZ por CD'})){
+for(const [id,label] of Object.entries({btnAllExcel:'Excel',btnAllZip:'Fotos ZIP',btnDailyTxt:'Resumen TXT',btnShareDailyTxt:'Compartir TXT',btnAllKmz:'KMZ del día'})){
  const b=document.getElementById(id);if(!b)continue;const s=b.querySelector('span:not(.ico)');if(s)s.textContent=label;b.setAttribute('aria-label',label)
 }
 for(const el of document.querySelectorAll('#screenExport>.card>.notice,#screenSync>.card>.notice'))el.remove();
