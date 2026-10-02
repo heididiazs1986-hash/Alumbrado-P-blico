@@ -1,4 +1,4 @@
-/* AP Inventory 0.8.19 · hallazgos matriciales, nocturno y entrega */
+/* AP Inventory 0.8.21 · hallazgos matriciales, nocturno y entrega */
 (()=>{
 'use strict';
 const byId=id=>document.getElementById(id);
@@ -137,7 +137,7 @@ syncBtn?.addEventListener('click',async()=>{
   await new Promise(r=>setTimeout(r,450));
   await exportDailyPhotosZip(date);
   await new Promise(r=>setTimeout(r,450));
-  await exportKmzByCd();
+  await exportDailyKmz(date);
 
   await originalPut('sync',{id:'SYNC-'+date,date,status:'prepared',generatedAt:nowIso()});
   await dashboard();
