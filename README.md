@@ -116,3 +116,10 @@ La hoja **ESTRUCTURAS** agrega la columna `CAPACIDAD_TRANSFORMADOR_KVA`. El KMZ 
 ## v0.8.17
 - Se elimina el manejador antiguo de “Preparar todo” que podía detener el JavaScript al ya no existir ese botón.
 - Sync queda definitivamente con un único botón: Preparar y cargar.
+
+
+## v0.8.21
+- El KMZ se consolida por jornada de trabajo: un único archivo por fecha y técnico, sin importar cuántas órdenes o CD se hayan trabajado.
+- Nombre: KMZ_AP_NOMBRE_APELLIDO_FECHA.kmz.
+- Dentro del KMZ, los elementos quedan agrupados por CD y conservan la simbología de CD, nodo MT, nodo BT y luminarias.
+- Exportar y Sync usan el mismo KMZ diario.
