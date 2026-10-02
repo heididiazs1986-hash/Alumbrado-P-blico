@@ -458,8 +458,8 @@ body,.field input,.field textarea,.field select{font-weight:400}
 .form-actions .primary-btn{background:#FF6600;color:#fff}
 @media(max-width:420px){.form-actions{grid-template-columns:minmax(0,1fr) minmax(0,1.7fr)}}
 </style>
-<link rel="stylesheet" href="ui-refinement.css?v=0818" />
-<link rel="stylesheet" href="ap-extended.css?v=0818" />
+<link rel="stylesheet" href="ui-refinement.css?v=0819" />
+<link rel="stylesheet" href="ap-extended.css?v=0819" />
 </head>
 <body>
 <header class="appbar">
@@ -558,12 +558,12 @@ body,.field input,.field textarea,.field select{font-weight:400}
     <div class="card" id="summaryStatus"></div>
     <div class="kpi-grid" id="summaryKpis"></div>
     <div class="card"><div class="section-title"><span class="dot"></span>Resumen generado</div><div class="summarybox" id="summaryText"></div><div class="btnrow"><button class="primary-btn" id="btnCopySummary">▣ Copiar resumen</button><button class="secondary-btn" id="btnDownloadOrderTxt">Actualizar TXT diario</button><button class="secondary-btn" id="btnDownloadOrderZip">ZIP fotos del día</button></div></div>
-    <div class="card"><div class="section-title"><span class="dot"></span>Apoyo técnico</div><div class="export-grid"><button class="export-btn" id="btnOrderKmz"><span class="eico">🗺️</span>KMZ por CD de la orden</button></div></div>
+    <div class="card"><div class="section-title"><span class="dot"></span>Apoyo técnico</div><div class="export-grid"><button class="export-btn" id="btnOrderKmz"><span class="eico">🗺️</span>KMZ del día</button></div></div>
   </section>
 
   <section class="screen" id="screenExport">
     <div class="toolbar"><button class="back" data-go="home">←</button><h2>Exportar</h2></div>
-    <div class="card"><div class="actions"><button class="action" id="btnAllExcel"><span class="ico">📊</span><span>Excel<small>ESTRUCTURAS + LUMINARIAS</small></span></button><button class="action" id="btnAllZip"><span class="ico">📷</span><span>Fotos ZIP</span></button><button class="action" id="btnDailyTxt"><span class="ico">📝</span><span>Resumen TXT</span></button><button class="action" id="btnShareDailyTxt"><span class="ico">↗</span><span>Compartir</span></button><button class="action" id="btnAllKmz"><span class="ico">🗺️</span><span>KMZ por CD</span></button></div></div>
+    <div class="card"><div class="actions"><button class="action" id="btnAllExcel"><span class="ico">📊</span><span>Excel<small>ESTRUCTURAS + LUMINARIAS</small></span></button><button class="action" id="btnAllZip"><span class="ico">📷</span><span>Fotos ZIP</span></button><button class="action" id="btnDailyTxt"><span class="ico">📝</span><span>Resumen TXT</span></button><button class="action" id="btnShareDailyTxt"><span class="ico">↗</span><span>Compartir</span></button><button class="action" id="btnAllKmz"><span class="ico">🗺️</span><span>KMZ del día</span></button></div></div>
   </section>
 
   <section class="screen" id="screenSync">
@@ -1137,30 +1137,50 @@ function compactIconPlacement(s,ll,index,structures){
   const start=axis-span/2,angle=n===1?axis:start+(span/(n-1))*index;
   return {sector:((Math.round(angle/22.5)%16)+16)%16,radius:n>6&&index%2===0?30:22};
 }
-function buildCdKmz(cd,structures,luminaires,referencePoints=[]){
+function buildDailyKmz(date,structures,luminaires){
  const valid=structures.filter(s=>Number.isFinite(Number(s.lat))&&Number.isFinite(Number(s.lon))&&String(s.lat)!==''&&String(s.lon)!=='');
  const linkedStyles=Object.keys(KMZ_ASSOCIATED_LUM_ICONS).map(id=>`<Style id="${id}"><IconStyle><scale>1</scale><Icon><href>icons/${id}.png</href></Icon><hotSpot x="56" y="56" xunits="pixels" yunits="pixels"/></IconStyle><LabelStyle><scale>0</scale></LabelStyle></Style>`).join('');
- const folders=[];
+ const cdGroups=new Map();
  for(const s of valid){
-  const ll=luminaires.filter(l=>l.structureId===s.id),type=upper(s.class),style=type==='CD'?'cd':type==='MT'?'mt':'bt';
-  let unlabeledCount=0;
-  const marks=ll.map((l,i)=>{
-   const pt=compactIconPlacement(s,ll,i,valid),icon=`lum_${pt.radius}_${pt.sector}`;
-   const noLabel=isNoLabel(l.serial);if(noLabel)unlabeledCount++;
-   const name=resolvedLumLabel(l,unlabeledCount||i+1);
-   // El icono amarillo se desplaza sólo en píxeles dentro de su PNG; GPS sin alterar.
-   return `<Placemark><name>${xml(s.node+' · '+name)}</name><styleUrl>#${icon}</styleUrl><description><![CDATA[${lumPopup(l,s,unlabeledCount-1)}]]></description><Point><coordinates>${s.lon},${s.lat},0</coordinates></Point></Placemark>`;
-  }).join('');
-  const nodeMark=`<Placemark><name>${xml(s.node+' · '+type)}</name><styleUrl>#${style}</styleUrl><description><![CDATA[${structurePopup(s,ll)}]]></description><Point><coordinates>${s.lon},${s.lat},0</coordinates></Point></Placemark>`;
-  folders.push(`<Folder><name>${xml('ESTRUCTURA '+s.node+' · '+type+' · '+ll.length+' LUMINARIAS')}</name>${marks}${nodeMark}</Folder>`)
+  const cd=upper(s.cd)||'SIN_CD';
+  if(!cdGroups.has(cd))cdGroups.set(cd,[]);
+  cdGroups.get(cd).push(s);
  }
- // Los archivos KMZ no incluyen el CD de referencia de programación: solamente la estructura CD levantada con su GPS real.
- const kml=`<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>AP INVENTORY · CD ${xml(cd)}</name><description>${xml('Iconos: CD naranja, nodo MT azul oscuro, nodo BT azul claro, luminarias amarillas individuales. Cada luminaria hereda el GPS exacto del nodo; la línea y el punto amarillo aparecen a unos píxeles de su propia estructura.')}</description>${kmlIconStyle('cd','icons/cd.png',.7)}${kmlIconStyle('mt','icons/mt.png',.59)}${kmlIconStyle('bt','icons/bt.png',.59)}${linkedStyles}${folders.join('')}</Document></kml>`;
+ const cdFolders=[];
+ for(const [cd,group] of [...cdGroups.entries()].sort((a,b)=>a[0].localeCompare(b[0]))){
+  const structureFolders=[];
+  for(const s of group){
+   const ll=luminaires.filter(l=>l.structureId===s.id),type=upper(s.class),style=type==='CD'?'cd':type==='MT'?'mt':'bt';
+   let unlabeledCount=0;
+   const marks=ll.map((l,i)=>{
+    const pt=compactIconPlacement(s,ll,i,valid),icon=`lum_${pt.radius}_${pt.sector}`;
+    const noLabel=isNoLabel(l.serial);if(noLabel)unlabeledCount++;
+    const name=resolvedLumLabel(l,unlabeledCount||i+1);
+    return `<Placemark><name>${xml(s.node+' · '+name)}</name><styleUrl>#${icon}</styleUrl><description><![CDATA[${lumPopup(l,s,unlabeledCount-1)}]]></description><Point><coordinates>${s.lon},${s.lat},0</coordinates></Point></Placemark>`;
+   }).join('');
+   const nodeMark=`<Placemark><name>${xml(s.node+' · '+type)}</name><styleUrl>#${style}</styleUrl><description><![CDATA[${structurePopup(s,ll)}]]></description><Point><coordinates>${s.lon},${s.lat},0</coordinates></Point></Placemark>`;
+   structureFolders.push(`<Folder><name>${xml('ESTRUCTURA '+s.node+' · '+type+' · '+ll.length+' LUMINARIAS')}</name>${marks}${nodeMark}</Folder>`);
+  }
+  cdFolders.push(`<Folder><name>${xml('CD '+cd)}</name>${structureFolders.join('')}</Folder>`);
+ }
+ const kml=`<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>AP INVENTORY · JORNADA ${xml(date)}</name><description>${xml('Jornada de trabajo AP Inventory. Iconos: CD naranja, nodo MT azul oscuro, nodo BT azul claro y luminarias amarillas individuales. Los elementos se agrupan por CD.')}</description>${kmlIconStyle('cd','icons/cd.png',.7)}${kmlIconStyle('mt','icons/mt.png',.59)}${kmlIconStyle('bt','icons/bt.png',.59)}${linkedStyles}${cdFolders.join('')}</Document></kml>`;
  const output=[{name:'doc.kml',data:kml},...['cd','mt','bt'].map(k=>({name:`icons/${k}.png`,data:base64Bytes(KMZ_ICON_BASE64[k])})),...Object.entries(KMZ_ASSOCIATED_LUM_ICONS).map(([k,v])=>({name:`icons/${k}.png`,data:base64Bytes(v)}))];
  const pkg=zipStore(output);
  return pkg.slice(0,pkg.size,'application/vnd.google-earth.kmz');
 }
-async function exportKmzByCd(orderId=null){const allStructures=await all('structures'),structures=allStructures.filter(s=>!orderId||s.orderId===orderId),allLums=await all('luminaires'),groups=new Map();for(const s of structures){const cd=upper(s.cd);if(!cd||!s.lat||!s.lon)continue;if(!groups.has(cd))groups.set(cd,[]);groups.get(cd).push(s)}if(!groups.size){toast('No hay estructuras georreferenciadas para generar KMZ');return 0}let n=0,withoutCdGps=[];for(const [cd,ss] of groups){const ids=new Set(ss.map(s=>s.id)),ll=allLums.filter(l=>ids.has(l.structureId));if(!ss.some(s=>upper(s.class)==='CD'))withoutCdGps.push(cd);const blob=buildCdKmz(cd,ss,ll,[]);download(`${safeFilePart(cd)}.kmz`,blob,'application/vnd.google-earth.kmz');n++;if(n<groups.size)await new Promise(r=>setTimeout(r,260))}toast(withoutCdGps.length?`${n} KMZ; ATENCIÓN: falta GPS del CD en ${withoutCdGps.join(', ')}`:`${n} KMZ por CD preparado${n===1?'':'s'}`);return n}
+async function exportDailyKmz(date=localDateKey()){
+ const settings=await getSettings(),id=exportIdentity(settings),ctx=await dailyContext(date);
+ const structures=ctx.structures.filter(s=>s.lat&&s.lon);
+ if(!structures.length){toast('No hay estructuras georreferenciadas del día para generar KMZ');return 0}
+ const structureIds=new Set(structures.map(s=>s.id));
+ const luminaires=ctx.luminaires.filter(l=>structureIds.has(l.structureId));
+ const withoutCdGps=[...new Set(structures.map(s=>upper(s.cd)).filter(Boolean))].filter(cd=>!structures.some(s=>upper(s.cd)===cd&&upper(s.class)==='CD'));
+ const blob=buildDailyKmz(date,structures,luminaires);
+ download(`KMZ_AP_${id.first}_${id.last}_${date}.kmz`,blob,'application/vnd.google-earth.kmz');
+ const cdCount=new Set(structures.map(s=>upper(s.cd)).filter(Boolean)).size;
+ toast(withoutCdGps.length?`KMZ del día generado · ${cdCount} CD · falta GPS del CD en ${withoutCdGps.join(', ')}`:`KMZ del día generado · ${cdCount} CD`);
+ return 1;
+}
 async function technicalPackage(orderId=null){const settings=await getSettings(),orders=(await all('orders')).filter(o=>!orderId||o.id===orderId),structures=(await all('structures')).filter(s=>!orderId||s.orderId===orderId),ids=new Set(structures.map(s=>s.id)),luminaires=(await all('luminaires')).filter(l=>ids.has(l.structureId));return {schema:'ap-inventory-1.2',exportId:uid('SYNC'),generatedAt:nowIso(),crew:settings,orders,structures:structures.map(({photos,...x})=>({...x,photoCount:photos?.length||0})),luminaires:luminaires.map(({photos,...x})=>({...x,photoCount:photos?.length||0}))}}
 
 async function exportDailyPhotosZip(date=localDateKey()){const settings=await getSettings(),id=exportIdentity(settings),ctx=await dailyContext(date),files=[];if(!ctx.structures.length&&!ctx.luminaires.length){toast('No hay fotografías del día para exportar');return}const lumByStructure=new Map();for(const l of ctx.luminaires){if(!lumByStructure.has(l.structureId))lumByStructure.set(l.structureId,[]);lumByStructure.get(l.structureId).push(l)}for(const s of ctx.structures){const base=`${safeFilePart(s.order)}_${safeFilePart(s.cd)}_${safeFilePart(s.node)}`;(s.photos||[]).forEach((p,i)=>{const b=dataUrlBytes(p.dataURL);if(b.length)files.push({name:`${base}/ESTRUCTURA_${String(i+1).padStart(2,'0')}.jpg`,data:b})});const ll=lumByStructure.get(s.id)||[];let missing=0;ll.forEach((l,idx)=>{const noLabel=isNoLabel(l.serial);if(noLabel)missing++;const suffix=safeFilePart(resolvedLumLabel(l,missing||idx+1),'LUMINARIA_'+(idx+1));const folder=`${base}_${suffix}`;(l.photos||[]).forEach((p,i)=>{const b=dataUrlBytes(p.dataURL);if(b.length)files.push({name:`${folder}/LUMINARIA_${String(i+1).padStart(2,'0')}.jpg`,data:b})})})}if(!files.length){toast('No hay fotografías almacenadas para las órdenes del día');return}download(`FOTOS_AP_${id.first}_${id.last}_${date}.zip`,zipStore(files),'application/zip')}
@@ -1193,7 +1213,7 @@ async function dailyTxt(){
  catch(e){if(e?.name==='AbortError'){toast('Se canceló la selección del TXT');return}toast(`No se pudo escribir el TXT: ${e.message||e}`)}
 }
 async function shareDailyTxt(){const d=await dailySummaryContent();if(!d){toast('No hay órdenes con inventario para compartir');return}const file=new File([d.text],d.name,{type:'text/plain'});try{if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){await navigator.share({title:'Resumen AP',text:'Resumen diario AP Inventory',files:[file]});return}if(navigator.share){await navigator.share({title:'Resumen AP',text:d.text});return}}catch(e){if(e?.name==='AbortError')return;console.error(e)}download(d.name,d.text,'text/plain;charset=utf-8');toast('El dispositivo no permitió compartir directamente; se generó el TXT')}
-$('btnDownloadOrderTxt').onclick=dailyTxt;$('btnDownloadOrderZip').onclick=()=>exportDailyPhotosZip();$('btnOrderKmz').onclick=()=>exportKmzByCd(activeOrderId);$('btnAllExcel').onclick=()=>exportExcel();$('btnAllKmz').onclick=()=>exportKmzByCd();$('btnDailyTxt').onclick=dailyTxt;$('btnShareDailyTxt').onclick=shareDailyTxt;$('btnAllZip').onclick=()=>exportDailyPhotosZip();
+$('btnDownloadOrderTxt').onclick=dailyTxt;$('btnDownloadOrderZip').onclick=()=>exportDailyPhotosZip();$('btnOrderKmz').onclick=()=>exportDailyKmz();$('btnAllExcel').onclick=()=>exportExcel();$('btnAllKmz').onclick=()=>exportDailyKmz();$('btnDailyTxt').onclick=dailyTxt;$('btnShareDailyTxt').onclick=shareDailyTxt;$('btnAllZip').onclick=()=>exportDailyPhotosZip();
 
 // ===== Programación maestra JSON + acceso local =====
 function jsonField(row,...names){for(const n of names){if(row&&row[n]!==undefined&&row[n]!==null)return row[n]}return ''}
@@ -1206,7 +1226,7 @@ function pin4(v){return /^\d{4}$/.test(String(v||''))}
 $('btnPinAccess').onclick=async()=>{const u=userByEmail($('loginUser').value);if(!u){toast('Selecciona un usuario');return}const pin=$('loginPin').value;if(!pin4(pin)){toast('El PIN debe tener exactamente 4 dígitos');return}const rec=await pinRecord(u.email);if(rec?.hash){if(await pinHash(u.email,pin)!==rec.hash){toast('PIN incorrecto');return}}else{const c=$('loginPinConfirm').value;if(pin!==c){toast('Los PIN no coinciden');return}await savePin(u.email,pin)}await saveSettingsPatch({email:u.email,name:u.name,crew:u.crew||'',profileSource:'LOCAL · AP_USUARIOS'});sessionUnlocked=true;$('loginModal').classList.remove('open');await refreshHeader();await dashboard();toast(`Hola, ${firstNameForUser(u)}`)};
 $('btnForgotPin').onclick=()=>{$('pinRecovery').classList.toggle('hidden');$('loginMatched').classList.add('hidden')};
 $('btnResetPin').onclick=async()=>{const u=userByEmail($('loginUser').value);if(!u){toast('Selecciona un usuario');return}if(!APP_CFG.masterPin&&!APP_CFG.masterPinHash){toast('PIN maestro no configurado en app-config.js');return}if(!(await masterPinOk($('masterPin').value))){toast('PIN maestro incorrecto');return}const p=$('newPin').value,c=$('newPinConfirm').value;if(!pin4(p)){toast('El nuevo PIN debe tener 4 dígitos');return}if(p!==c){toast('Los PIN no coinciden');return}await savePin(u.email,p);$('masterPin').value='';$('newPin').value='';$('newPinConfirm').value='';$('pinRecovery').classList.add('hidden');await setLoginMode();toast('PIN personal restablecido. Ingresa con el nuevo PIN')};
-async function renderSyncInfo(){const c=await dailyContext();$('syncInfo').innerHTML=`<b>${c.orders.length}</b> órdenes del día · <b>${c.structures.length}</b> estructuras · <b>${c.luminaires.length}</b> luminarias. Se prepararán Excel + ZIP de fotos + KMZ por CD.`}
+async function renderSyncInfo(){const c=await dailyContext();$('syncInfo').innerHTML=`<b>${c.orders.length}</b> órdenes del día · <b>${c.structures.length}</b> estructuras · <b>${c.luminaires.length}</b> luminarias. Se prepararán Excel + ZIP de fotos + KMZ del día.`}
 
 $('btnSettings').onclick=async()=>{const st=await getSettings();$('setName').value=st.name||'';$('setEmail').value=(st.email||'').toUpperCase();$('setCrew').value=upper(st.crew||'SIN CÓDIGO ASIGNADO');if($('setProfileSource'))$('setProfileSource').value=upper(st.profileSource||'LOCAL · AP_USUARIOS');$('settingsModal').classList.add('open')};
 $('btnChangeUser').onclick=async()=>{sessionUnlocked=false;$('settingsModal').classList.remove('open');await openLogin()};
@@ -1230,7 +1250,7 @@ document.addEventListener('blur',e=>forceOperationalUppercase(e.target),true);
 if('serviceWorker'  in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 (async()=>{await openDb();await migrateLegacyLumLabels();populateLoginUsers();buildStructureFindings();setStructureNovelty('NO');buildLumFindings();setLumNovelty('NO');await dashboard();await ensureUserSession();})();
 </script>
-<script src="ui-refinement.js?v=0818"></script>
-<script src="ap-extended.js?v=0818"></script>
+<script src="ui-refinement.js?v=0819"></script>
+<script src="ap-extended.js?v=0819"></script>
 </body>
 </html>
