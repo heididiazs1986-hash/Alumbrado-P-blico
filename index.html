@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#FEFEFF" />
-<title>AP Inventory v0.8.28</title>
+<title>AP Inventory v0.8.29</title>
 <link rel="manifest" href="manifest.json" />
 <script src="app-config.js"></script>
 <style>
@@ -747,10 +747,10 @@ async function validateLuminaireAtStructure(s){
     }
     if(distance>LUM_STRUCTURE_RADIUS_M){
       if(distance<=uncertainty){
-        const ok=window.confirm(`El GPS ubica el dispositivo a ${Math.round(distance)} m de la estructura, pero la precisión reportada es aproximada (${currentAccuracy?currentAccuracy.toFixed(1):'sin dato'} m). ¿Confirma que esta luminaria está físicamente instalada en esta misma estructura?`);
+        const ok=window.confirm(`El GPS ubica el dispositivo a ${Math.round(distance)} m de la estructura, pero la precisión reportada es aproximada (${currentAccuracy?currentAccuracy.toFixed(1):'sin dato'} m). ¿Confirma que esta luminaria está físicamente instalada en esta misma estructura?\n\nSi no corresponde a este poste, primero debes crear la nueva estructura y después registrar allí la luminaria.`);
         if(!ok)return null
       }else{
-        toast(`Estás a ${Math.round(distance)} m de la estructura. Registra o selecciona la estructura física donde está instalada la luminaria.`);
+        toast(`La ubicación actual ya no corresponde a esta estructura (${Math.round(distance)} m). Primero debes crear la nueva estructura física donde está instalada la luminaria y después registrarla allí.`);
         return null
       }
     }
@@ -1156,7 +1156,7 @@ $('btnSaveLum').onclick=async()=>{
   openLumNextChoice(s,serial)
 };
 $('btnNextSameStructure').onclick=async()=>{$('lumNextModal').classList.remove('open');await openLumFormForCreate()};
-$('btnNextNewStructure').onclick=async()=>{$('lumNextModal').classList.remove('open');returnStructureDetailId=activeStructureId;resetStructure();applyActiveCdToNewStructure();await renderStructureForm();show('structure');toast('Registra las coordenadas de la nueva estructura antes de asociar su luminaria')};
+$('btnNextNewStructure').onclick=async()=>{$('lumNextModal').classList.remove('open');returnStructureDetailId=activeStructureId;resetStructure();applyActiveCdToNewStructure();await renderStructureForm();show('structure');toast('Primero crea y guarda la nueva estructura física; después registra la luminaria en esa estructura.')};
 $('btnNewStructureSameOrder').onclick=async()=>{returnStructureDetailId=activeStructureId;resetStructure();applyActiveCdToNewStructure();await renderStructureForm();show('structure')};$('btnGoOrderSummary').onclick=async()=>{const st=await orderStats(activeOrderId);if(st.luminaires.length>=MAX_LUMINAIRES_PER_ORDER){const used=new Set(st.luminaires.map(l=>l.structureId)),counts=[...used].map(id=>st.luminaires.filter(l=>l.structureId===id).length),max=Math.max(0,...counts);if((used.size<=2||max>=MULTI_LUM_CONFIRM_FROM)&&!window.confirm(`Revisión de consistencia: ${st.luminaires.length} luminarias están distribuidas en ${used.size} estructura(s); el máximo en una estructura es ${max}. ¿Confirma que la asociación estructura–luminaria es correcta?`))return}await renderSummary(activeOrderId);show('summary')};
 
 function structureBad(s){if(s.finalState)return s.finalState!=='SIN NOVEDAD';return Object.values(s.technical||{}).some(v=>v===false)}
@@ -1331,7 +1331,7 @@ document.addEventListener('blur',e=>forceOperationalUppercase(e.target),true);
 if('serviceWorker'  in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 (async()=>{await openDb();activeCdContext=(await getSettings()).activeCd||null;await migrateLegacyLumLabels();populateLoginUsers();buildStructureFindings();setStructureNovelty('NO');buildLumFindings();setLumNovelty('NO');await dashboard();await ensureUserSession();})();
 </script>
-<script src="ui-refinement.js?v=0828"></script>
-<script src="ap-extended.js?v=0828"></script>
+<script src="ui-refinement.js?v=0829"></script>
+<script src="ap-extended.js?v=0829"></script>
 </body>
 </html>
