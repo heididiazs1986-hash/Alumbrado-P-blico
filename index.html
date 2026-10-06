@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#FEFEFF" />
-<title>AP Inventory v0.8.27</title>
+<title>AP Inventory v0.8.28</title>
 <link rel="manifest" href="manifest.json" />
 <script src="app-config.js"></script>
 <style>
@@ -620,7 +620,7 @@ body,.field input,.field textarea,.field select{font-weight:400}
 const $=id=>document.getElementById(id);
 const qsa=s=>[...document.querySelectorAll(s)];
 const DB_NAME='APInventoryDB', DB_VER=1;
-const REQUIRE_GPS_12M=true;
+const REQUIRE_GPS_12M=false; // La precisión se registra y se recomienda, pero no bloquea.
 const PHOTO_MIN=2, PHOTO_MAX=7, MAX_LUMINAIRES_PER_ORDER=10, LUM_STRUCTURE_RADIUS_M=20, MULTI_LUM_CONFIRM_FROM=3;
 let db=null, activeOrderId=null, activeStructureId=null, editingStructureId=null, editingLumId=null, orderFilter='all', stClass='CD', selectedPhotos=[], selectedLumPhotos=[], activeCdContext=null;
 const STRUCTURE_FINDINGS_CD=[
@@ -727,23 +727,34 @@ function getFieldGps(){
 }
 async function validateLuminaireAtStructure(s){
   const sLat=Number(s?.lat),sLon=Number(s?.lon),sAcc=Number(s?.accuracy);
-  if(!Number.isFinite(sLat)||!Number.isFinite(sLon)||!Number.isFinite(sAcc)||sAcc>12){
-    toast('Esta estructura no tiene GPS válido ≤12 m. Actualiza sus coordenadas antes de agregar luminarias.');
+  if(!Number.isFinite(sLat)||!Number.isFinite(sLon)){
+    toast('Esta estructura no tiene coordenadas. Captura su ubicación antes de agregar luminarias.');
     return null
   }
   toast('Verificando ubicación respecto a la estructura…');
   try{
     const g=await getFieldGps();
-    if(!Number.isFinite(g.accuracy)||g.accuracy>12){
-      toast('Precisión GPS insuficiente. Para registrar la luminaria se requieren 12 m o menos.');
+    if(!Number.isFinite(g.lat)||!Number.isFinite(g.lon)){
+      toast('No fue posible obtener coordenadas actuales.');
       return null
     }
     const distance=metersBetween({lat:sLat,lon:sLon},{lat:g.lat,lon:g.lon});
-    if(!Number.isFinite(distance)||distance>LUM_STRUCTURE_RADIUS_M){
-      toast(`Estás a ${Number.isFinite(distance)?Math.round(distance):'?'} m de la estructura. Registra o selecciona la estructura física donde está instalada la luminaria.`);
+    const structureAccuracy=Number.isFinite(sAcc)?sAcc:0,currentAccuracy=Number.isFinite(g.accuracy)?g.accuracy:0;
+    const uncertainty=Math.max(LUM_STRUCTURE_RADIUS_M,structureAccuracy+currentAccuracy);
+    if(!Number.isFinite(distance)){
+      toast('No fue posible comparar la ubicación con la estructura.');
       return null
     }
-    return {lat:g.lat.toFixed(7),lon:g.lon.toFixed(7),accuracy:g.accuracy.toFixed(1),distanceToStructureM:Number(distance.toFixed(1))}
+    if(distance>LUM_STRUCTURE_RADIUS_M){
+      if(distance<=uncertainty){
+        const ok=window.confirm(`El GPS ubica el dispositivo a ${Math.round(distance)} m de la estructura, pero la precisión reportada es aproximada (${currentAccuracy?currentAccuracy.toFixed(1):'sin dato'} m). ¿Confirma que esta luminaria está físicamente instalada en esta misma estructura?`);
+        if(!ok)return null
+      }else{
+        toast(`Estás a ${Math.round(distance)} m de la estructura. Registra o selecciona la estructura física donde está instalada la luminaria.`);
+        return null
+      }
+    }
+    return {lat:g.lat.toFixed(7),lon:g.lon.toFixed(7),accuracy:Number.isFinite(g.accuracy)?g.accuracy.toFixed(1):'',distanceToStructureM:Number(distance.toFixed(1))}
   }catch(e){
     toast('No fue posible validar la ubicación: '+(e?.message||e));
     return null
@@ -1077,8 +1088,7 @@ async function openLumFormForCreate(){
   if(!activeStructure){toast('Selecciona primero la estructura padre de la luminaria');return}
   const activeStructureCd=normalizeCdValue(activeStructure.cd||''),hasLocalCd=stats.structures.some(s=>upper(s.class)==='CD'&&normalizeCdValue(s.cd)===activeStructureCd),hasInheritedCd=activeCdContext?.cd&&normalizeCdValue(activeCdContext.cd)===activeStructureCd;
   if(!hasLocalCd&&!hasInheritedCd){toast('Primero registra o activa el CD de esta estructura');returnStructureDetailId=null;resetStructure();await renderStructureForm();show('structure');return}
-  const structureAcc=Number(activeStructure.accuracy);
-  if(!activeStructure.lat||!activeStructure.lon||!Number.isFinite(structureAcc)||structureAcc>12){toast('La estructura debe tener coordenadas de terreno con precisión ≤12 m antes de agregar luminarias.');return}
+  if(!activeStructure.lat||!activeStructure.lon){toast('La estructura debe tener coordenadas antes de agregar luminarias.');return}
   const lumsHere=stats.luminaires.filter(l=>l.structureId===activeStructure.id).length;
   if(lumsHere>=MULTI_LUM_CONFIRM_FROM-1&&!window.confirm(`Esta estructura ya tiene ${lumsHere} luminaria(s) registrada(s). ¿Confirma que la siguiente también está físicamente instalada en este mismo poste?`))return;
   editingLumId=null;$('lumModalTitle').textContent='Agregar luminaria';$('btnSaveLum').textContent='Guardar luminaria';
@@ -1321,7 +1331,7 @@ document.addEventListener('blur',e=>forceOperationalUppercase(e.target),true);
 if('serviceWorker'  in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 (async()=>{await openDb();activeCdContext=(await getSettings()).activeCd||null;await migrateLegacyLumLabels();populateLoginUsers();buildStructureFindings();setStructureNovelty('NO');buildLumFindings();setLumNovelty('NO');await dashboard();await ensureUserSession();})();
 </script>
-<script src="ui-refinement.js?v=0827"></script>
-<script src="ap-extended.js?v=0827"></script>
+<script src="ui-refinement.js?v=0828"></script>
+<script src="ap-extended.js?v=0828"></script>
 </body>
 </html>
