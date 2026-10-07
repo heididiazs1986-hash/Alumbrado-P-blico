@@ -84,7 +84,7 @@ byId('btnTheme')?.addEventListener('click',()=>{
 const syncBtn=byId('btnSyncAll'),state=byId('syncState');
 async function refreshDelivery(){
  if(!state)return;
- const record=await get('sync','SYNC-'+localDateKey());
+ const date=selectedWorkDate(),record=await get('sync','SYNC-'+date);
  if(!record){
   state.className='sync-state';
   state.textContent='Listo para preparar la entrega del día.';
@@ -124,7 +124,7 @@ syncBtn?.addEventListener('click',async()=>{
  state.textContent='Generando Excel, fotografías y KMZ…';
 
  try{
-  const date=localDateKey(),data=await excelData(null,date);
+  const date=selectedWorkDate(),data=await excelData(null,date);
   if(data.every(x=>x.rows.length<=1)){
    if(receptionWindow)receptionWindow.close();
    state.className='sync-state';
@@ -133,7 +133,7 @@ syncBtn?.addEventListener('click',async()=>{
    return;
   }
 
-  await exportExcel(null);
+  await exportExcel(null,date);
   await new Promise(r=>setTimeout(r,450));
   await exportDailyPhotosZip(date);
   await new Promise(r=>setTimeout(r,450));
