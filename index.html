@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#FEFEFF" />
-<title>AP Inventory v0.8.31</title>
+<title>AP Inventory v0.8.32</title>
 <link rel="manifest" href="manifest.json" />
 <script src="app-config.js"></script>
 <style>
@@ -565,6 +565,7 @@ body,.field input,.field textarea,.field select{font-weight:400}
     <div class="toolbar"><button class="back" data-go="home">←</button><h2>Exportar</h2></div>
     <div class="card"><div class="field"><label>Fecha de la jornada a exportar</label><input id="exportWorkDate" type="date" /><div class="hint" id="exportDateInfo">Selecciona la fecha real del trabajo. Los registros permanecen guardados aunque exportes otro día.</div></div></div>
     <div class="card"><div class="actions"><button class="action" id="btnAllExcel"><span class="ico">📊</span><span>Excel<small>ESTRUCTURAS + LUMINARIAS</small></span></button><button class="action" id="btnAllZip"><span class="ico">📷</span><span>Fotos ZIP</span></button><button class="action" id="btnDailyTxt"><span class="ico">📝</span><span>Resumen TXT</span></button><button class="action" id="btnShareDailyTxt"><span class="ico">↗</span><span>Compartir</span></button><button class="action" id="btnAllKmz"><span class="ico">🗺️</span><span>KMZ del día</span></button></div></div>
+    <div class="card"><div class="section-title"><span class="dot"></span>Cerrar jornada</div><div class="notice amber"><b>Úsalo solo después de verificar la exportación.</b><br>Se retirarán del registro local únicamente los datos de la fecha seleccionada. Las demás jornadas seguirán disponibles.</div><button class="secondary-btn full mt12" type="button" id="btnClearExportedDay">✓ Finalizar jornada exportada</button></div>
   </section>
 
   <section class="screen" id="screenSync">
@@ -1188,6 +1189,36 @@ function sheetXml(rows,hasTable=false){
 function tableXml(name,rows,tableId){const cols=(rows[0]||[]).map((h,i)=>`<tableColumn id="${i+1}" name="${xml(String(h||`COL_${i+1}`))}"/>`).join('');const lastCol=excelCol(Math.max(1,(rows[0]||[]).length)),lastRow=Math.max(1,rows.length),ref=`A1:${lastCol}${lastRow}`;return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><table xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" id="${tableId}" name="${xml(name)}" displayName="${xml(name)}" ref="${ref}" totalsRowShown="0"><autoFilter ref="${ref}"/><tableColumns count="${(rows[0]||[]).length}">${cols}</tableColumns><tableStyleInfo name="TableStyleLight8" showFirstColumn="0" showLastColumn="0" showRowStripes="1" showColumnStripes="0"/></table>`}
 function xlsxBlob(sheets){const files=[];const sheetOverrides=sheets.map((s,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('');const tableOverrides=sheets.map((s,i)=>s.tableName?`<Override PartName="/xl/tables/table${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml"/>`:'').join('');files.push({name:'[Content_Types].xml',data:`<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheetOverrides}${tableOverrides}</Types>`});files.push({name:'_rels/.rels',data:`<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`});files.push({name:'xl/workbook.xml',data:`<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets.map((s,i)=>`<sheet name="${xml(s.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`});files.push({name:'xl/_rels/workbook.xml.rels',data:`<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((s,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`});files.push({name:'xl/styles.xml',data:`<?xml version="1.0" encoding="UTF-8"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="10"/><color rgb="FF455665"/><name val="Aptos"/></font><font><sz val="10"/><b/><color rgb="FF163F59"/><name val="Aptos"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF79D1FF"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="2"><xf xfId="0" fontId="0" fillId="0" borderId="0"/><xf xfId="0" fontId="1" fillId="1" borderId="0" applyFont="1" applyFill="1"/></cellXfs></styleSheet>`});sheets.forEach((sh,i)=>{files.push({name:`xl/worksheets/sheet${i+1}.xml`,data:sheetXml(sh.rows,!!sh.tableName)});if(sh.tableName){files.push({name:`xl/worksheets/_rels/sheet${i+1}.xml.rels`,data:`<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/table" Target="../tables/table${i+1}.xml"/></Relationships>`});files.push({name:`xl/tables/table${i+1}.xml`,data:tableXml(sh.tableName,sh.rows,i+1)})}});const pkg=zipStore(files);return pkg.slice(0,pkg.size,'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
 async function dailyContext(date=selectedWorkDate()){const [orders,structures,luminaires]=await Promise.all([all('orders'),all('structures'),all('luminaires')]);const datedStructures=structures.filter(s=>localDateFromStamp(s.createdAt||s.updatedAt)===date),datedLuminaires=luminaires.filter(l=>localDateFromStamp(l.createdAt||l.updatedAt)===date),structureIds=new Set(datedStructures.map(s=>s.id));for(const l of datedLuminaires)if(l.structureId)structureIds.add(l.structureId);const ss=structures.filter(s=>structureIds.has(s.id)),orderIds=new Set([...ss.map(s=>s.orderId),...datedLuminaires.map(l=>l.orderId)]),os=orders.filter(o=>orderIds.has(o.id));return {date,orders:os,structures:ss,luminaires:datedLuminaires}}
+async function purgeWorkDate(date=selectedWorkDate()){
+  const ctx=await dailyContext(date);
+  if(!ctx.structures.length&&!ctx.luminaires.length){toast('No hay registros de esta jornada para limpiar');return false}
+  const orderIds=new Set([...ctx.orders.map(o=>o.id),...ctx.structures.map(s=>s.orderId),...ctx.luminaires.map(l=>l.orderId)]);
+  const ok=window.confirm('Vas a retirar del registro local la jornada '+date+': '+ctx.orders.length+' orden(es), '+ctx.structures.length+' estructura(s) y '+ctx.luminaires.length+' luminaria(s).\n\nLas demás fechas NO se eliminarán. Continúa solo si ya verificaste los archivos exportados.');
+  if(!ok)return false;
+  const targetLumIds=new Set(ctx.luminaires.map(l=>l.id));
+  for(const l of ctx.luminaires)await del('luminaires',l.id);
+  const remainingLums=(await all('luminaires')).filter(l=>!targetLumIds.has(l.id));
+  const keepStructureIds=new Set(remainingLums.map(l=>l.structureId).filter(Boolean));
+  let structuresDeleted=0;
+  for(const s of ctx.structures){
+    if(localDateFromStamp(s.createdAt||s.updatedAt)===date&&!keepStructureIds.has(s.id)){await del('structures',s.id);structuresDeleted++}
+  }
+  const remainingStructures=await all('structures'),remainingLuminaires=await all('luminaires');
+  let ordersDeleted=0;
+  for(const id of orderIds){
+    const o=await get('orders',id);if(!o)continue;
+    const hasData=remainingStructures.some(s=>s.orderId===id)||remainingLuminaires.some(l=>l.orderId===id);
+    if(!hasData&&String(o.programDate||o.fecha||'')===date){await del('orders',id);ordersDeleted++}
+  }
+  await put('sync',{id:'CLEAN-'+date,date,status:'exported-cleared',clearedAt:nowIso(),orders:ctx.orders.length,structures:structuresDeleted,luminaires:ctx.luminaires.length});
+  if(activeStructureId&&!(await get('structures',activeStructureId)))activeStructureId=null;
+  if(activeOrderId&&!(await get('orders',activeOrderId)))activeOrderId=null;
+  await dashboard();
+  if($('screenOrders').classList.contains('active'))await renderOrders();
+  await refreshWorkDateInfo();
+  toast('Jornada '+date+' retirada del registro local. Las demás fechas permanecen disponibles.');
+  return true
+}
 
 function apGroupStructure(f){const id=String(f.id||'');if(/^CD_(OIL|TANK|BUSHING|TERMINAL)/.test(id))return 'TRANSFORMADOR';if(/^CD_GROUND/.test(id))return 'PUESTA A TIERRA DEL CD';if(/^CD_(DPS|CUTOUT|HOLDER|PROTECTION)/.test(id))return 'PROTECCIONES DEL CD';if(id==='ST_INCLINATION'||/DEFORM/.test(id))return 'GEOMETRÍA Y VERTICALIDAD';if(/^ST_BASE|ST_EMBED|ST_BASE_MOVEMENT/.test(id))return 'BASE Y EMPOTRAMIENTO';if(/CORR|PERFOR/.test(id))return 'CORROSIÓN';if(/CRACK/.test(id))return 'FISURAS';if(/BREAK|FRACT/.test(id))return 'FRACTURAS Y ROTURAS';if(/ROT|INSECT|GALLER/.test(id))return 'DETERIORO BIOLÓGICO';return 'DETERIORO DEL MATERIAL'}
 function apGroupLum(f){const id=String(f.id||'');if(/^L_(NO_LIGHT|INTERMITTENT|FLICKER|DELAY|DAY_ON)/.test(id))return 'FUNCIONAMIENTO';if(/^L_HOUSING/.test(id))return 'CARCASA';if(/^L_DIFF/.test(id))return 'DIFUSOR / LENTE';if(/^L_(MOISTURE|WATER)/.test(id))return 'HERMETICIDAD';if(/^L_(DISC|INSUL|EXPOSED|SPLICE|HEAT|ARC)/.test(id))return 'CONDUCTORES Y CONEXIONES';if(/^L_(FIX|PART_DETACH|FALL_RISK)/.test(id))return 'FIJACIÓN';if(id==='L_MISALIGN')return 'ORIENTACIÓN';if(/^LED_/.test(id))return 'MÓDULO LED';if(/^DRV_/.test(id))return 'DRIVER';if(/^SRC_/.test(id))return 'FUENTE LUMINOSA';if(/^BAL_|^IGN_/.test(id))return 'EQUIPO AUXILIAR';if(/^PC_/.test(id))return 'FOTOCELDA';if(/^PV_/.test(id))return 'PANEL FOTOVOLTAICO';if(/^BAT_/.test(id))return 'BATERÍA';if(/^CTL_/.test(id))return 'CONTROLADOR';return 'OTROS ELEMENTOS'}
@@ -1294,7 +1325,7 @@ async function dailyTxt(){
  catch(e){if(e?.name==='AbortError'){toast('Se canceló la selección del TXT');return}toast(`No se pudo escribir el TXT: ${e.message||e}`)}
 }
 async function shareDailyTxt(){const d=await dailySummaryContent();if(!d){toast('No hay órdenes con inventario para compartir');return}const file=new File([d.text],d.name,{type:'text/plain'});try{if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){await navigator.share({title:'Resumen AP',text:'Resumen diario AP Inventory',files:[file]});return}if(navigator.share){await navigator.share({title:'Resumen AP',text:d.text});return}}catch(e){if(e?.name==='AbortError')return;console.error(e)}download(d.name,d.text,'text/plain;charset=utf-8');toast('El dispositivo no permitió compartir directamente; se generó el TXT')}
-$('btnDownloadOrderTxt').onclick=dailyTxt;$('btnDownloadOrderZip').onclick=()=>exportDailyPhotosZip();$('btnOrderKmz').onclick=()=>exportDailyKmz();$('btnAllExcel').onclick=()=>exportExcel();$('btnAllKmz').onclick=()=>exportDailyKmz();$('btnDailyTxt').onclick=dailyTxt;$('btnShareDailyTxt').onclick=shareDailyTxt;$('btnAllZip').onclick=()=>exportDailyPhotosZip();$('exportWorkDate')?.addEventListener('change',e=>{syncWorkDateInputs(e.target.value);refreshWorkDateInfo()});$('syncWorkDate')?.addEventListener('change',e=>{syncWorkDateInputs(e.target.value);renderSyncInfo()});syncWorkDateInputs(localDateKey());
+$('btnDownloadOrderTxt').onclick=dailyTxt;$('btnDownloadOrderZip').onclick=()=>exportDailyPhotosZip();$('btnOrderKmz').onclick=()=>exportDailyKmz();$('btnAllExcel').onclick=()=>exportExcel();$('btnAllKmz').onclick=()=>exportDailyKmz();$('btnDailyTxt').onclick=dailyTxt;$('btnShareDailyTxt').onclick=shareDailyTxt;$('btnAllZip').onclick=()=>exportDailyPhotosZip();$('btnClearExportedDay').onclick=()=>purgeWorkDate(selectedWorkDate());$('exportWorkDate')?.addEventListener('change',e=>{syncWorkDateInputs(e.target.value);refreshWorkDateInfo()});$('syncWorkDate')?.addEventListener('change',e=>{syncWorkDateInputs(e.target.value);renderSyncInfo()});syncWorkDateInputs(localDateKey());
 
 // ===== Programación diaria Excel + acceso local =====
 function excelField(row,...names){const keys=Object.keys(row||{});for(const name of names){const wanted=norm(name),key=keys.find(k=>norm(k)===wanted);if(key!==undefined&&row[key]!==undefined&&row[key]!==null)return row[key]}return ''}
@@ -1336,7 +1367,7 @@ document.addEventListener('blur',e=>forceOperationalUppercase(e.target),true);
 if('serviceWorker'  in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 (async()=>{await openDb();activeCdContext=(await getSettings()).activeCd||null;await migrateLegacyLumLabels();populateLoginUsers();buildStructureFindings();setStructureNovelty('NO');buildLumFindings();setLumNovelty('NO');await dashboard();await ensureUserSession();})();
 </script>
-<script src="ui-refinement.js?v=0831"></script>
-<script src="ap-extended.js?v=0831"></script>
+<script src="ui-refinement.js?v=0832"></script>
+<script src="ap-extended.js?v=0832"></script>
 </body>
 </html>
