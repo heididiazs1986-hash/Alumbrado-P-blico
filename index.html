@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#FEFEFF" />
-<title>AP Inventory v0.8.30</title>
+<title>AP Inventory v0.8.31</title>
 <link rel="manifest" href="manifest.json" />
 <script src="app-config.js"></script>
 <style>
@@ -1336,7 +1336,7 @@ document.addEventListener('blur',e=>forceOperationalUppercase(e.target),true);
 if('serviceWorker'  in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 (async()=>{await openDb();activeCdContext=(await getSettings()).activeCd||null;await migrateLegacyLumLabels();populateLoginUsers();buildStructureFindings();setStructureNovelty('NO');buildLumFindings();setLumNovelty('NO');await dashboard();await ensureUserSession();})();
 </script>
-<script src="ui-refinement.js?v=0830"></script>
-<script src="ap-extended.js?v=0830"></script>
+<script src="ui-refinement.js?v=0831"></script>
+<script src="ap-extended.js?v=0831"></script>
 </body>
 </html>
