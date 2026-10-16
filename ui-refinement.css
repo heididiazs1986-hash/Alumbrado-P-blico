@@ -4,7 +4,7 @@
 #activeOrderNotice strong{font-weight:650;color:#183A51}
 #activeOrderNotice .order-ref{display:flex;flex-wrap:wrap;gap:3px 13px;align-items:baseline}
 #activeOrderNotice .order-ref+.order-ref{margin-top:3px}
-#cdFirstHint,#gpsTestNotice,#lmLabelHint{display:none!important}
+#cdFirstHint,#gpsTestNotice{display:none!important}
 #screenStructure .gps-mini-map{height:91px}
 #screenStructure .gps-status-head{padding:10px 12px}
 #stFindingsWrap,#lmFindingsWrap{position:relative;z-index:8}

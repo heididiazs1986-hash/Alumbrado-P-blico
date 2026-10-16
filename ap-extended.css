@@ -1,6 +1,9 @@
 /* AP Inventory v0.8.18 · matriz de hallazgos, turno nocturno y entrega */
 .theme-switch{height:37px;min-width:76px;padding:0 10px;border-radius:999px;border:1px solid #A7DFF8;background:#E6F7FF;color:#236B87;font-size:.82rem;font-weight:650;cursor:pointer;display:grid;place-items:center;margin-left:auto}
-#stCd~.hint,#cdFirstHint,#gpsTestNotice,#lmLabelHint,#lmTech+.hint{display:none!important}
+#stCd~.hint,#cdFirstHint,#gpsTestNotice,#lmTech+.hint{display:none!important}
+/* Campos desactivados por «¿Punto físico marcado?» / «¿Rótulo legible?» = No */
+.field input:disabled{background:#eef2f6;color:#8b9aa8;border-style:dashed;cursor:not-allowed}
+html[data-theme="dark"] .field input:disabled{background:#223240;color:#7d8d9c}
 .matrix-group{border-bottom:1px solid #E7F0F4}.matrix-group:last-child{border:0}
 .matrix-heading{position:sticky;top:0;z-index:2;background:#E8F7FF;color:#145D7B;font-weight:650;font-size:.7rem;padding:5px 8px;letter-spacing:.045em}
 .matrix-group .finding-item{padding:6px 8px!important;min-height:33px!important}

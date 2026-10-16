@@ -60,5 +60,5 @@ for(const [id,label] of Object.entries({btnAllExcel:'Excel',btnAllZip:'Fotos ZIP
  const b=document.getElementById(id);if(!b)continue;const s=b.querySelector('span:not(.ico)');if(s)s.textContent=label;b.setAttribute('aria-label',label)
 }
 for(const el of document.querySelectorAll('#screenExport>.card>.notice,#screenSync>.card>.notice'))el.remove();
-const serial=document.getElementById('lmSerial');if(serial)serial.placeholder='Rótulo, ILEGIBLE o NO MARCADO';
+const serial=document.getElementById('lmSerial');if(serial)serial.placeholder='Ej. AP-034-01';
 })();
