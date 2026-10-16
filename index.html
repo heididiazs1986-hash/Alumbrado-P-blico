@@ -458,8 +458,8 @@ body,.field input,.field textarea,.field select{font-weight:400}
 .form-actions .primary-btn{background:#FF6600;color:#fff}
 @media(max-width:420px){.form-actions{grid-template-columns:minmax(0,1fr) minmax(0,1.7fr)}}
 </style>
-<link rel="stylesheet" href="ui-refinement.css?v=0821" />
-<link rel="stylesheet" href="ap-extended.css?v=0821" />
+<link rel="stylesheet" href="ui-refinement.css?v=0833" />
+<link rel="stylesheet" href="ap-extended.css?v=0833" />
 </head>
 <body>
 <header class="appbar">
@@ -475,14 +475,17 @@ body,.field input,.field textarea,.field select{font-weight:400}
     <div class="home-layout"><div><div class="card hero">
       <div class="crew"><div class="avatar">👷</div><div class="crew-info"><b id="crewLabel">Equipo de Campo</b><span id="userLabel">Trabajo local sin conexión</span></div><button class="tiny-btn" id="btnSettings">Perfil</button></div>
     </div>
-    </div><div class="right-rail"><div class="kpi-grid">
+    </div><div class="right-rail">
+    <div class="actions top-action">
+      <button class="action load" id="btnImport"><span class="ico">↻</span><span>Cargar programación<small>Cargar o actualizar las órdenes programadas para trabajo de campo</small></span></button>
+    </div>
+    <div class="kpi-grid">
       <div class="kpi"><div class="ico">▤</div><div><div class="n" id="kOrders">0</div><div class="l">Órdenes asignadas</div></div></div>
       <div class="kpi"><div class="ico">⚡</div><div><div class="n" id="kStructures">0</div><div class="l">Estructuras AP</div></div></div>
       <div class="kpi green"><div class="ico">💡</div><div><div class="n" id="kLums">0</div><div class="l">Luminarias</div></div></div>
       <div class="kpi"><div class="ico">☁</div><div><div class="n" id="kPending">0</div><div class="l">Pendientes de sincronizar</div></div></div>
     </div>
     <div class="actions two-col">
-      <button class="action primary" id="btnImport"><span class="ico">↻</span><span>Actualizar programación<small>Cargar o actualizar las órdenes programadas para trabajo de campo</small></span></button>
       <button class="action success" id="btnInventory"><span class="ico">⚡</span><span>Realizar inventario<small>Registrar estructuras y luminarias</small></span></button>
       <button class="action" id="btnRecords"><span class="ico">☷</span><span>Ver registros<small>Consultar órdenes, avance y resúmenes</small></span></button>
       <button class="action" id="btnExport"><span class="ico">⇧</span><span>Exportar<small>Excel diario, fotos ZIP y resumen TXT</small></span></button>
@@ -1433,7 +1436,7 @@ document.addEventListener('blur',e=>forceOperationalUppercase(e.target),true);
 if('serviceWorker'  in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 (async()=>{await openDb();activeCdContext=(await getSettings()).activeCd||null;await migrateLegacyLumLabels();populateLoginUsers();buildStructureFindings();setStructureNovelty('NO');buildLumFindings();setLumNovelty('NO');await dashboard();await ensureUserSession();})();
 </script>
-<script src="ui-refinement.js?v=0832"></script>
-<script src="ap-extended.js?v=0832"></script>
+<script src="ui-refinement.js?v=0833"></script>
+<script src="ap-extended.js?v=0833"></script>
 </body>
 </html>

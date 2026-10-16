@@ -1,4 +1,4 @@
-/* AP Inventory v0.8.32 · cache propio y referencias fotográficas offline */
+/* AP Inventory v0.8.33 · cache propio y referencias fotográficas offline */
 const CACHE_NAME='ap-inventory-static-v0833';
 const ASSETS=[
  './','./index.html','./ui-refinement.css','./ui-refinement.js','./ap-extended.css','./ap-extended.js','./app-config.js','./manifest.json','./app-icon.svg',
