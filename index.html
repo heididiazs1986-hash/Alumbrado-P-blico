@@ -460,7 +460,7 @@ body,.field input,.field textarea,.field select{font-weight:400}
 </style>
 <link rel="stylesheet" href="ui-refinement.css?v=0833" />
 <link rel="stylesheet" href="ap-extended.css?v=0833" />
-</head>
+<style>.gsb{position:relative;display:flex;align-items:center;gap:12px;box-sizing:border-box;width:calc(100% - 24px);max-width:1000px;height:clamp(104px,18vw,210px);margin:12px auto;padding:0 clamp(12px,3vw,32px);border-radius:16px;overflow:hidden;background:var(--gsb-bg,#eee) var(--gsb-img) right center/cover no-repeat;box-shadow:0 6px 22px rgba(15,25,40,.16);color:var(--gsb-t,#222);font-family:Inter,"Segoe UI",system-ui,Arial,sans-serif;isolation:isolate}.gsb::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,var(--gsb-bg) 0,var(--gsb-bg) 46%,transparent 86%);opacity:.0}.gsb img{width:clamp(44px,8vw,84px);height:auto;aspect-ratio:1;border-radius:24%;box-shadow:0 6px 16px rgba(0,0,0,.25);flex:none}.gsb b{display:block;font-weight:800;font-size:clamp(19px,3.4vw,36px);line-height:1.06;letter-spacing:-.4px;color:var(--gsb-t)}.gsb span{display:block;font-weight:600;font-size:clamp(11px,1.5vw,16px);margin-top:5px;color:var(--gsb-s);max-width:min(46%,430px)}.gsb small{display:block;font-weight:500;font-size:clamp(10px,1.2vw,13px);margin-top:3px;color:var(--gsb-s);opacity:.85}@media(max-width:560px){.gsb::before{opacity:.92}.gsb span{display:none}.gsb{height:104px}}</style></head>
 <body>
 <header class="appbar">
   <div class="row">
@@ -469,7 +469,7 @@ body,.field input,.field textarea,.field select{font-weight:400}
     <button type="button" class="theme-switch" id="btnTheme" aria-label="Activar modo nocturno" title="Modo nocturno">☾</button>
     <div class="offline" id="netBadge">● Offline listo</div>
   </div>
-</header>
+</header><div class="gsb" style="--gsb-img:url(./assets/gsb-Alumbrado_Publico.webp);--gsb-bg:#253c66;--gsb-t:#FFFFFF;--gsb-s:#C9D3E0"><img src="./assets/gs-mark.svg" alt="" width="84" height="84"><div><b>GS Alumbrado Público</b><span>Inventario de alumbrado público en campo</span><small>Desarrollado por Heidi Díaz</small></div></div>
 <main>
   <section class="screen active" id="screenHome">
     <div class="home-layout"><div><div class="card hero">
