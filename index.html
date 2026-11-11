@@ -1437,6 +1437,7 @@ if('serviceWorker'  in navigator)window.addEventListener('load',()=>navigator.se
 (async()=>{await openDb();activeCdContext=(await getSettings()).activeCd||null;await migrateLegacyLumLabels();populateLoginUsers();buildStructureFindings();setStructureNovelty('NO');buildLumFindings();setLumNovelty('NO');await dashboard();await ensureUserSession();})();
 </script>
 <footer class="gs-credit" style="text-align:center;font:600 11.5px/1.4 Manrope,'Segoe UI',Arial,sans-serif;opacity:.6;padding:8px 12px 24px;color:#5B6675">Desarrollado por Heidi Díaz</footer>
+<script src="./assets/gs-voz.js?v=1"></script>
 <script src="ui-refinement.js?v=0833"></script>
 <script src="ap-extended.js?v=0833"></script>
 </body>
